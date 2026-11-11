@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Keamanan: Blokir akses langsung ke file sensitif (.env, .git, .editorconfig, dll)
+    <Files ~ "^\.(env|git|editorconfig)">
+        Order allow,deny
+        Deny from all
+    </Files>
+
+    # Arahkan semua request otomatis ke subfolder public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

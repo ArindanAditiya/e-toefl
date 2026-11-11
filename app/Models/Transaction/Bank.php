@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Models\Transaction;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Uuid;
+
+class Bank extends Model
+{
+    use HasFactory, SoftDeletes,Uuid;
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'id',
+        'bank_name',
+        'rekening_number',
+        'rekening_name',
+        'image',
+        'is_active',
+    ];
+}
