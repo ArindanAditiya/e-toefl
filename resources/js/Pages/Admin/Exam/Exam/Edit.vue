@@ -94,7 +94,7 @@
                                 api-key="958z2qj9q76pfd7ryf02bwbov0y5exsjrzc82ir659sv46wn"
                                 v-model="form.description"
                                 :init="{
-                                    images_upload_url: 'https://wakalahmu.com/admin/upload',
+                                    images_upload_url: '/upload',
                                     automatic_uploads: true,
                                     height: 400,
                                     plugins: [

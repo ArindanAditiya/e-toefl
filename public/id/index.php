@@ -1,3 +1,21 @@
+<?php
+// Ambil konfigurasi APP_URL dari file .env Laravel
+$appUrl = '';
+$envPath = dirname(__DIR__, 2) . '/.env';
+
+if (file_exists($envPath)) {
+    $envContent = file_get_contents($envPath);
+    if (preg_match('/^\s*APP_URL\s*=\s*([^\r\n#]+)/m', $envContent, $matches)) {
+        $appUrl = trim(trim($matches[1]), "\"' \t");
+    }
+}
+
+// Base URL: jika APP_URL terisi, gunakan nilainya; jika kosong, fallback ke relative URL
+$baseUrl = !empty($appUrl) ? rtrim($appUrl, '/') : '';
+$loginUrl = $baseUrl !== '' ? $baseUrl . '/login' : '/login';
+$registerUrl = $baseUrl !== '' ? $baseUrl . '/register' : '/register';
+$homeUrl = $baseUrl !== '' ? $baseUrl : '/';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -51,7 +69,7 @@ https://templatemo.com/tm-562-space-dynamic
         <div class="col-12">
           <nav class="main-nav">
             <!-- ***** Logo Start ***** -->
-            <a href="" class="logo">
+            <a href="<?= $homeUrl ?>" class="logo">
               <!-- <h4>Spac<span>Dyna</span></h4> -->
               <img src="assets/images/logo.png" class="img-responsive">
             </a>
@@ -64,7 +82,7 @@ https://templatemo.com/tm-562-space-dynamic
               <li class="scroll-to-section"><a href="#toeic">TOEIC</a></li>
               <li class="scroll-to-section"><a href="#portfolio">Sertifikat</a></li> 
               <li class="scroll-to-section"><a href="#contact">Hubungi Kami</a></li> 
-              <li class="scroll-to-section"><div class="main-red-button"><a href="http://localhost:8000/login">Masuk</a></div></li> 
+              <li class="scroll-to-section"><div class="main-red-button"><a href="<?= $loginUrl ?>">Masuk</a></div></li> 
             </ul>        
             <a class='menu-trigger'>
                 <span>Menu</span>
@@ -86,8 +104,8 @@ https://templatemo.com/tm-562-space-dynamic
               <div class="left-content header-text wow fadeInLeft" data-wow-duration="1s" data-wow-delay="1s">
                 <h6>Selamat datang di e-TOEFL</h6>
                 <h2>Online <em>TOEFL</em> &amp; <span>TOEIC</span> Prediction Test</h2>
-                <p>e-TOEFL adalah platform ujicoba online untuk TOEFL dan TOEIC prediction test yang terdiri dari banyak paket ujian-ujian untuk mempersiapkan test TOEFL dan TOEIC kamu. Sudah punya akun ? <a rel="nofollow" href="http://localhost:8000/login" target="_parent">Login Sekarang</a> untuk mulai ujian dan dapatkan sertifikat.</p>
-                    <a href="http://localhost:8000/register"><button type="button" class="btn btn-primary btn-md">Daftar e-TOEFL</button></a>
+                <p>e-TOEFL adalah platform ujicoba online untuk TOEFL dan TOEIC prediction test yang terdiri dari banyak paket ujian-ujian untuk mempersiapkan test TOEFL dan TOEIC kamu. Sudah punya akun ? <a rel="nofollow" href="<?= $loginUrl ?>" target="_parent">Login Sekarang</a> untuk mulai ujian dan dapatkan sertifikat.</p>
+                    <a href="<?= $registerUrl ?>"><button type="button" class="btn btn-primary btn-md">Daftar e-TOEFL</button></a>
                 </form>
               </div>
             </div>
