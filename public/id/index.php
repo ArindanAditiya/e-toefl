@@ -105,8 +105,10 @@ https://templatemo.com/tm-562-space-dynamic
                 <h6>Selamat datang di e-TOEFL</h6>
                 <h2>Online <em>TOEFL</em> &amp; <span>TOEIC</span> Prediction Test</h2>
                 <p>e-TOEFL adalah platform ujicoba online untuk TOEFL dan TOEIC prediction test yang terdiri dari banyak paket ujian-ujian untuk mempersiapkan test TOEFL dan TOEIC kamu. Sudah punya akun ? <a rel="nofollow" href="<?= $loginUrl ?>" target="_parent">Login Sekarang</a> untuk mulai ujian dan dapatkan sertifikat.</p>
-                    <a href="<?= $registerUrl ?>"><button type="button" class="btn btn-primary btn-md">Daftar e-TOEFL</button></a>
-                </form>
+                <div class="hero-action-buttons">
+                  <a href="<?= $registerUrl ?>" class="btn btn-primary btn-md">Daftar e-TOEFL</a>
+                  <a href="<?= $loginUrl ?>" class="btn btn-danger btn-md">Login</a>
+                </div>
               </div>
             </div>
             <div class="col-lg-6">
