@@ -26,6 +26,7 @@ class CategoryRequest extends FormRequest
         return [
             'name' => 'required|string|max:191',
             'thumbnail' => request()->isMethod('PUT') ? 'sometimes' : 'required',
+            'certificate_template' => 'nullable|image|mimes:jpg,jpeg,png|max:10240',
         ];
     }
 
@@ -34,6 +35,7 @@ class CategoryRequest extends FormRequest
         return [
             'name' => __('category.name'),
             'thumbnail' => __('category.thumbnail'),
+            'certificate_template' => 'Template sertifikat',
         ];
     }
 }

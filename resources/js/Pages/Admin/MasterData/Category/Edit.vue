@@ -43,6 +43,17 @@
                             </div>
                         </div>
                         <div class="col-12">
+                            <label class="form-label">Template Sertifikat (JPG/PNG, maks. 10 MB)</label>
+                            <div v-if="category.certificate_template" class="mb-2">
+                                <img :src="`/storage/${category.certificate_template}`" alt="Template sertifikat saat ini" style="max-width: 320px; max-height: 180px;">
+                            </div>
+                            <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="form-control" @input="form.certificate_template = $event.target.files[0]" :class="{ 'is-invalid': errors.certificate_template }">
+                            <div v-if="errors.certificate_template" class="invalid-feedback">
+                                {{ errors.certificate_template }}
+                            </div>
+                            <small class="form-text text-muted">Gunakan gambar latar kosong tanpa nama/nilai peserta. Kosongkan untuk tetap menggunakan template saat ini, atau pilih file baru untuk menggantinya.</small>
+                        </div>
+                        <div class="col-12">
                             <button type="submit" class="btn btn-primary px-5">Submit</button>
                         </div>
                     </form>
@@ -94,18 +105,20 @@
             const form = reactive({
                 name: props.category.name,
                 thumbnail: '',
+                certificate_template: '',
             });
 
             // submit method
             const submit = () => {
                 // send data to server
                 Inertia.post(`/admin/categories/${props.category.id}`, {
-                    forceFormData: true,
                     _method: 'put',
                     // data
                     name: form.name,
                     thumbnail: form.thumbnail,
+                    certificate_template: form.certificate_template,
                 }, {
+                    forceFormData: true,
                     onSuccess: () => {
                         //show success alert
                         Swal.fire({

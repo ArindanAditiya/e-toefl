@@ -43,6 +43,14 @@
                             </div>
                         </div>
                         <div class="col-12">
+                            <label class="form-label">Template Sertifikat (JPG/PNG, maks. 10 MB)</label>
+                            <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="form-control" @input="form.certificate_template = $event.target.files[0]" :class="{ 'is-invalid': errors.certificate_template }">
+                            <div v-if="errors.certificate_template" class="invalid-feedback">
+                                {{ errors.certificate_template }}
+                            </div>
+                            <small class="form-text text-muted">Opsional. Unggah gambar latar kosong (tanpa nama/nilai peserta) untuk kategori ini.</small>
+                        </div>
+                        <div class="col-12">
                             <button type="submit" class="btn btn-primary px-5">Submit</button>
                         </div>
                     </form>
@@ -93,17 +101,19 @@
             const form = reactive({
                 name: '',
                 thumbnail: '',
+                certificate_template: '',
             });
 
             // submit method
             const submit = () => {
                 // send data to server
                 Inertia.post('/admin/categories', {
-                    forceFormData: true,
                     // data
                     name: form.name,
                     thumbnail: form.thumbnail,
+                    certificate_template: form.certificate_template,
                 }, {
+                    forceFormData: true,
                     onSuccess: () => {
                         //show success alert
                         Swal.fire({

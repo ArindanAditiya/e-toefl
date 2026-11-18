@@ -19,6 +19,7 @@ class Category extends Model
         'id',
         'name',
         'thumbnail',
+        'certificate_template',
     ];
 
     protected $casts = [

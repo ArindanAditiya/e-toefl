@@ -204,10 +204,14 @@ Pengaturan master data adalah fondasi sebelum bank soal dan ujian dapat dipublik
 ```
 
 #### 1. Kategori (*Master Data → Kategori*)
+Kategori ujian dapat ditambahkan dari menu **Master Data → Kategori**. Saat menambahkan atau mengedit kategori, administrator dapat mengunggah **Template Sertifikat** berupa gambar JPG/PNG (maksimal 10 MB). Unggah gambar latar yang masih kosong dari nama/nilai peserta; aplikasi menambahkan nama peserta, nama ujian, nilai per bagian, dan nilai akhir saat PDF dicetak. File disimpan di `storage/app/public/upload_files/certificates/categories/`. Kategori baru seperti TOAFL dapat memakai template sendiri tanpa mengubah kode aplikasi.
+
+Template bersifat opsional saat kategori dibuat. Jika tidak ada template yang diunggah, sertifikat hanya memakai template bawaan untuk kategori bernama tepat **TOEFL** atau **TOEIC**. Saat kategori dihapus, file template sertifikat dan thumbnail kategori ikut dihapus.
+
 Gunakan kategori standar yang telah disediakan oleh sistem:
 * **TOEFL:** Memiliki ID khusus untuk rumus perhitungan baku skala 310 - 677.
 * **TOEIC:** Memiliki skala penilaian 10 - 990.
-*(Catatan: Jangan mengubah nama kategori dasar ini karena terhubung langsung dengan engine generate sertifikat).*
+*(Catatan: Jangan mengubah nama kategori dasar ini karena rumus nilai TOEFL dan TOEIC bawaan masih menggunakan nama kategori tersebut. Untuk kategori baru, gunakan tabel konversi nilai yang sesuai.)*
 
 #### 2. Kategori Penilaian (*Mata Pelajaran → Kategori Penilaian*)
 Kategori penilaian merepresentasikan pembagian bagian (*section*) ujian.
@@ -341,7 +345,7 @@ Jika siswa terblokir karena melewati batas toleransi perpindahan tab:
   2. Anda dapat melihat kode token voucher yang sudah terbentuk langsung pada halaman **Detail Transaksi** admin, lalu menyalin dan mengirimkannya secara manual ke peserta.
 
 **Q2: Mengapa sertifikat peserta tidak bisa diunduh atau tampil blank?**
-* **Jawaban:** Generator sertifikat PDF membaca nama kategori secara spesifik. Pastikan nama kategori ujian adalah tepat **TOEFL** atau **TOEIC**. Nama kategori selain itu tidak dikenali oleh template sertifikat bawaan sistem.
+* **Jawaban:** Pastikan kategori memiliki template sertifikat yang diunggah dan file tersebut masih tersedia. Jika tidak ada template kategori, template bawaan hanya tersedia untuk kategori bernama tepat **TOEFL** atau **TOEIC**. Kategori baru seperti TOAFL perlu diunggahi template JPG/PNG melalui **Master Data → Kategori**.
 
 **Q3: Mengapa kalkulasi skor TOEFL siswa tidak berada di rentang 310 - 677 padahal tabel konversi sudah diisi?**
 * **Jawaban:** Rumus baku konversi TOEFL `((Section 1 + Section 2 + Section 3) / 3) * 10` terikat pada Kategori TOEFL default sistem. Pastikan ujian TOEFL Anda menggunakan kategori master TOEFL bawaan.
