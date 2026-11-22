@@ -32,8 +32,7 @@ class SendTransactionNotification extends Notification
      */
     public function via($notifiable)
     {
-        // return ['mail'];
-        return ['telegram'];
+        return ['mail'];
     }
 
     /**
@@ -45,9 +44,17 @@ class SendTransactionNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject("[e-TOEFL Ma'had Aly Tebuireng] Transaksi Baru #" . $this->transaction->code)
+            ->greeting("Assalamu'alaikum Wr. Wb. Admin e-TOEFL,")
+            ->line("Terdapat transaksi/pesanan paket ujian baru:")
+            ->line("No. Invoice: " . $this->transaction->code)
+            ->line("Waktu Transaksi: " . $this->transaction->created_at)
+            ->line("Nama Peserta: " . $this->transaction->user->name)
+            ->line("Email Peserta: " . $this->transaction->user->email)
+            ->line("Paket Ujian: " . $this->transaction->exam->title)
+            ->line("Total Nominal: Rp. " . number_format($this->transaction->total_purchases, 0, ',', '.'))
+            ->action('Buka Menu Manajemen Transaksi', url('/admin/transactions'))
+            ->line("Pesan otomatis dari Sistem e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng.");
     }
 
     public function toTelegram($notifiable)

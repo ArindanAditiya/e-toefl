@@ -1,6 +1,6 @@
 <template>
     <Head>
-        <title>e-TOEFL - Register</title>
+        <title>{{ appName }} - Registrasi</title>
     </Head>
 
     <div class="d-flex align-items-center justify-content-center my-5 my-lg-0">
@@ -41,8 +41,8 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <label class="form-label">Nomor Hp (WA Aktif Untuk Aktivasi Akun)</label>
-                                            <input type="text" v-model="form.phone_number" :class="{ 'is-invalid': errors.phone_number }" class="form-control" placeholder="Nomor Hp (WA Aktif)">
+                                            <label class="form-label">Nomor WhatsApp Aktif</label>
+                                            <input type="text" v-model="form.phone_number" :class="{ 'is-invalid': errors.phone_number }" class="form-control" placeholder="Contoh: 081234567890">
                                             <div v-if="errors.phone_number" class="invalid-feedback">
                                                 {{ errors.phone_number }}
                                             </div>

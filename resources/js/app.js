@@ -30,15 +30,23 @@ createInertiaApp({
             },
             formatDate: function (date) {
                 return moment(date).format('DD MMMM YYYY');
+            },
+            formatWaLink: function (waInput) {
+                if (!waInput) return 'https://wa.me/';
+                if (waInput.startsWith('http://') || waInput.startsWith('https://')) return waInput;
+                if (waInput.startsWith('@')) return 'https://wa.me/' + waInput.substring(1);
+                var clean = waInput.replace(/[^0-9]/g, '');
+                if (clean.startsWith('0')) clean = '62' + clean.substring(1);
+                return 'https://wa.me/' + clean;
             }
         },
         data() {
             return { 
-              appName   : "e-TOEFL" , 
-              wa        : "+6283814305092", 
-              copyright : "© 2023 E-TOEFL by Rumah IT",
-              email     : "info@ujicoba.online",
-              alamat    : "Jl. Raya Perjuangan Cikarang Barat Bekasi" 
+              appName   : "e-TOEFL Ma'had Aly Tebuireng", 
+              wa        : "@mahadalytbi", 
+              copyright : "© " + new Date().getFullYear() + " e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng",
+              email     : "mahadaly@tebuireng.ac.id",
+              alamat    : "Jl. Irian Jaya No. 10, Tebuireng, Cukir, Kec. Diwek, Kabupaten Jombang, Jawa Timur 61471" 
             }
         },
       })

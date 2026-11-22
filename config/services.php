@@ -40,10 +40,14 @@ return [
         'token' => env('WHATSAPP_TOKEN'),
     ],
 
+    'brevo' => [
+        'api_key' => env('BREVO_API_KEY'),
+    ],
+
     'admin' => [
-        'wa' => env('ADMIN_WA', '083814305092'),
-        'email' => env('ADMIN_EMAIL', 'info@ujicoba.online'),
-        'address' => env('ADMIN_ADDRESS', 'Jl. Raya Perjuangan Cikarang Barat Bekasi'),
+        'wa' => env('ADMIN_WA', '@mahadalytbi'),
+        'email' => env('ADMIN_EMAIL', 'mahadaly@tebuireng.ac.id'),
+        'address' => env('ADMIN_ADDRESS', 'Jl. Irian Jaya No. 10, Tebuireng, Cukir, Kec. Diwek, Kabupaten Jombang, Jawa Timur 61471'),
     ],
 
 ];

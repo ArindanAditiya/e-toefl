@@ -76,12 +76,31 @@ class CreateNewUser implements CreatesNewUsers
         ]);
           
         $appUrl = rtrim(config('app.url') ?: env('APP_URL', ''), '/');
-        $appName = config('app.name', 'e-TOEFL');
-        $message = "*Mohon dibaca dan dipahami!*\n\n_Hallo, saya admin dari ".$appName.", akun anda telah terdaftar di platform kami, berikut link untuk aktivasi akun anda._\n\nNama: ".$user->name."\nEmail: ".$user->email."\n\nBerikut link verifikasi anda\n".$appUrl."/user/".$user->id."/activation \n\n*Jika link tidak bisa diklik, silakan copy dan paste dibrowser anda.*\n\n_terimakasih telah menjadi bagian dari kami, semoga ".$appName." dapat membantu proses belajar anda. aamiin._";
-        sendWhatsappNotification($user->student->phone_number, $message);
+        $appName = "e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng";
+        $activationUrl = $appUrl . "/user/" . $user->id . "/activation";
+
+        sendBrevoNotification(
+            $user->email,
+            $user->name,
+            "Aktivasi Akun e-TOEFL - Ma'had Aly Hasyim Asy'ari Tebuireng",
+            [
+                "Selamat datang di platform resmi Ujian <strong>e-TOEFL Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang</strong>.",
+                "Akun Anda telah berhasil didaftarkan. Untuk mulai menggunakan akun dan mengikuti ujian prediksi TOEFL/TOEIC, silakan klik tombol aktivasi di bawah ini:"
+            ],
+            [
+                'Nama Lengkap' => htmlspecialchars($user->name),
+                'Email Terdaftar' => htmlspecialchars($user->email),
+                'Nomor WhatsApp' => htmlspecialchars($user->student->phone_number),
+            ],
+            $activationUrl,
+            "Aktifkan Akun Saya Sekarang",
+            "Tautan aktivasi berlaku untuk memverifikasi keabsahan data peserta. Mohon jaga kerahasiaan akun Anda."
+        );
         
         $admin = User::find('20b2a4122c614bb68e41b1a6f3f37780');
-        $admin->notify(new SendNewUserNotification($user));
+        if ($admin) {
+            $admin->notify(new SendNewUserNotification($user));
+        }
 
         return $user;
     }

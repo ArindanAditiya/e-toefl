@@ -32,8 +32,7 @@ class SendNewUserNotification extends Notification
      */
     public function via($notifiable)
     {
-        // return ['mail'];
-        return ['telegram'];
+        return ['mail'];
     }
 
     /**
@@ -45,9 +44,14 @@ class SendNewUserNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->subject("[e-TOEFL Ma'had Aly Tebuireng] Pendaftaran Pengguna Baru: " . $this->user->name)
+            ->greeting("Assalamu'alaikum Wr. Wb. Admin e-TOEFL,")
+            ->line("Terdapat pengguna/peserta baru yang telah mendaftar di platform e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng:")
+            ->line("Nama Peserta: " . $this->user->name)
+            ->line("Email: " . $this->user->email)
+            ->line("Waktu Pendaftaran: " . $this->user->created_at)
+            ->action('Buka Menu Manajemen Pengguna', url('/admin/users'))
+            ->line("Pesan otomatis dari Sistem e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng.");
     }
 
     public function toTelegram($notifiable)

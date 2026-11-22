@@ -1,6 +1,6 @@
 <template>
     <Head>
-        <title>MyEnglish - Activation</title>
+        <title>{{ appName }} - Aktivasi Akun</title>
     </Head>
 
     <div class="authentication-reset-password d-flex align-items-center justify-content-center">

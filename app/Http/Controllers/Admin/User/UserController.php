@@ -158,12 +158,26 @@ class UserController extends Controller
         if(!$this->userService->find($id)) return abort('404', 'uppss....');
 
         $user = $this->userService->find($id);
+        $appUrl = rtrim(config('app.url') ?: env('APP_URL', ''), '/');
 
-        $message = "*Mohon dibaca dan dipahami!*\n\n_Hallo, saya admin dari e-TOEFL, akun anda telah terdaftar di platform kami, berikut akun anda._\n\nNama: ".$user->name."\nEmail: ".$user->email."\n\n*saat ini anda belum mengaktifkan akun anda, apakah ada kendala ketika aktivasi ? atau belum mendapatkan link aktivasi ?*\n\n *jika tidak diaktivasi maka dalam jangka waktu lama akun akan terhapus secara otomatis.*\n\n_terimakasih telah menjadi bagian dari kami, semoga e-TOEFL dapat membantu proses belajar anda. aamiin._";
-        
-        sendWhatsappNotification($user->student->phone_number, $message);    
+        sendBrevoNotification(
+            $user->email,
+            $user->name,
+            "Pengingat: Aktivasi Akun e-TOEFL Ma'had Aly Tebuireng",
+            [
+                "Akun e-TOEFL Anda telah terdaftar, namun saat ini status akun Anda masih <strong>belum diaktifkan</strong>.",
+                "Silakan lakukan aktivasi segera agar Anda dapat mengakses paket soal ujian dan fitur simulasi TOEFL/TOEIC."
+            ],
+            [
+                'Nama Peserta' => htmlspecialchars($user->name),
+                'Email' => htmlspecialchars($user->email),
+            ],
+            $appUrl . "/user/" . $user->id . "/activation",
+            "Aktifkan Akun Sekarang",
+            "Jika akun tidak diaktifkan dalam kurun waktu tertentu, sistem dapat menonaktifkan data secara otomatis."
+        );
 
-        return redirect()->back()->with('success', 'Reminder telah dikirim.');
+        return redirect()->back()->with('success', 'Email reminder aktivasi telah berhasil dikirim ke ' . $user->email);
     }
 
     public function memberReminder($id)
@@ -171,11 +185,25 @@ class UserController extends Controller
         if(!$this->userService->find($id)) return abort('404', 'uppss....');
 
         $user = $this->userService->find($id);
+        $appUrl = rtrim(config('app.url') ?: env('APP_URL', ''), '/');
 
-        $message = "*Mohon dibaca dan dipahami!*\n\n_Hallo, saya admin dari e-TOEFL, akun anda telah terdaftar di platform kami, berikut akun anda._\n\nNama: ".$user->name."\nEmail: ".$user->email."\n\nsaat ini anda belum mengaktifkan member anda, yuk ambil kesempatan karena ada voucher member gratis untuk anda jika masih bingung, silakan lihat panduan berikut ini.\n\nPanduan Penggunaan Web:\nbit.ly/panduan-etoefl\n\nPanduan Pengerjaan Soal:\nbit.ly/panduan-soal-etoefl\n\n_terimakasih telah menjadi bagian dari kami, semoga e-TOEFL dapat membantu proses belajar anda. aamiin._";
-        
-        sendWhatsappNotification($user->student->phone_number, $message);    
+        sendBrevoNotification(
+            $user->email,
+            $user->name,
+            "Pengingat: Aktivasi Status Member & Voucher Ujian e-TOEFL",
+            [
+                "Saat ini akun Anda belum mengaktifkan paket voucher ujian e-TOEFL.",
+                "Manfaatkan kesempatan untuk mengasah kemampuan bahasa Inggris Anda dengan beragam paket try out yang telah disiapkan oleh Ma'had Aly Hasyim Asy'ari Tebuireng."
+            ],
+            [
+                'Nama Peserta' => htmlspecialchars($user->name),
+                'Email' => htmlspecialchars($user->email),
+            ],
+            $appUrl . "/user/dashboard",
+            "Masuk ke Dashboard Ujian",
+            "Tersedia panduan lengkap pengerjaan soal dan aktivasi voucher di dashboard pengguna."
+        );
 
-        return redirect()->back()->with('success', 'Reminder Member telah dikirim.');
+        return redirect()->back()->with('success', 'Email reminder member telah berhasil dikirim ke ' . $user->email);
     }
 }

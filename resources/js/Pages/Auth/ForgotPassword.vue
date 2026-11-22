@@ -27,7 +27,7 @@
                                         </div>
                                         <div class="mb-3 mt-0">
                                             <label class="form-label">Nomor Hp (WA)</label>
-                                            <input type="text" v-model="form.phone_number" :class="{ 'is-invalid': errors.phone_number }" class="form-control" :placeholder="`Contoh: ${wa}`">
+                                            <input type="text" v-model="form.phone_number" :class="{ 'is-invalid': errors.phone_number }" class="form-control" placeholder="Contoh: 081234567890">
                                             <div v-if="errors.phone_number" class="invalid-feedback">
                                                 {{ errors.phone_number }}
                                             </div>
@@ -39,7 +39,7 @@
                                         <div class="text-center">
                                             <br>
                                             <p class="text-muted">
-                                                Nomor tidak terdaftar, <a :href="`https://wa.me/${wa}?text=${encodeURI('Hallo, Admin saya sudah daftar dan ingin reset password, ketika konfirmasi nomor tidak terdaftar, berikut data saya untuk perbaikan:\n\nNama:\nEmail:\nNomor Handphone Aktif:\n\n terimakasih.')}`" target="_blank">klik disini</a> untuk perbaikan
+                                                Nomor tidak terdaftar? <a :href="`${formatWaLink(wa)}?text=${encodeURI('Hallo, Admin e-TOEFL Ma\'had Aly Tebuireng, saya ingin reset password akun, mohon bantuan untuk verifikasi data saya:\n\nNama:\nEmail:\nNomor WhatsApp:\n\nTerima kasih.')}`" target="_blank">Hubungi Admin di WhatsApp</a>
                                             </p>
                                         </div>
                                     </div>

@@ -71,13 +71,48 @@ use Carbon\Carbon;
 		}
 	}
 
+	if(!function_exists('sendBrevoNotification')) {
+		function sendBrevoNotification($toEmail, $toName, $subject, array $paragraphs = [], array $details = [], $actionUrl = null, $actionText = null, $footerNote = null)
+		{
+			$html = \App\Services\Notification\BrevoEmailService::buildAcademicTemplate(
+				$subject,
+				"Assalamu'alaikum Wr. Wb. " . ($toName ?: 'Mahasantri / Peserta') . ",",
+				$paragraphs,
+				$details,
+				$actionUrl,
+				$actionText,
+				$footerNote
+			);
+			return \App\Services\Notification\BrevoEmailService::sendEmail($toEmail, $toName, $subject, $html);
+		}
+	}
+
 	if(!function_exists('sendWhatsappNotification')) {
 		function sendWhatsappNotification($number, $message)
 		{
+			// Bridging to Brevo Email API when student email is resolvable
+			try {
+				$student = \App\Models\MasterData\Student::where('phone_number', $number)->first();
+				if ($student && $student->user && !empty($student->user->email)) {
+					$cleanMsg = str_replace(['*', '_'], '', $message);
+					$paragraphs = array_filter(explode("\n\n", $cleanMsg));
+					sendBrevoNotification(
+						$student->user->email,
+						$student->user->name,
+						"Pemberitahuan Akun e-TOEFL Ma'had Aly Tebuireng",
+						$paragraphs
+					);
+				}
+			} catch (\Throwable $e) {
+				\Illuminate\Support\Facades\Log::warning("sendWhatsappNotification email bridge warning: " . $e->getMessage());
+			}
+
+			// Optional Legacy WhatsApp API (Fonnte) if token configured
 			$token = config('services.whatsapp.token') ?: env('WHATSAPP_TOKEN');
 			if (empty($token)) {
 				return;
 			}
+
         	$curl = curl_init();
 
 			$data = [
@@ -94,16 +129,14 @@ use Carbon\Carbon;
 				CURLOPT_FOLLOWLOCATION => true,
 				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 				CURLOPT_CUSTOMREQUEST => 'POST',
-				curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data)),
+				CURLOPT_POSTFIELDS => http_build_query($data),
 				CURLOPT_HTTPHEADER => array(
 					'Authorization: '.$token.''
-			),
+				),
 			]);
 
 			$response = curl_exec($curl);
-
 			curl_close($curl);
-			// return json_decode($response);
 		}
 	}
 

@@ -54,14 +54,29 @@ class ActivationController extends Controller
             $namePassword = explode(" ", $student->user->name);
             $newPassword = strtolower($namePassword[0]).mt_rand(10000, 99999);
 
-            $message = "*Mohon dibaca dan dipahami!*\n\n_Hallo, saya admin dari e-TOEFL, berikut permintaan perubahan password untuk akun anda._\n\nNama: ".$user->name."\nEmail: ".$user->email."\nPassword Baru: ".$newPassword."\n\n*Mohon diperhatikan untuk penulisan email dan password baik itu huruf besar atau kecilnya, karena itu sangat berpengaruh untuk login, ingat dan simpan supaya tidak lupa.*\n\n_terimakasih_";
-            sendWhatsappNotification($user->student->phone_number, $message);
+            sendBrevoNotification(
+                $user->email,
+                $user->name,
+                "Permintaan Perubahan Password - e-TOEFL Ma'had Aly Tebuireng",
+                [
+                    "Kami menerima permintaan pengaturan ulang (reset) kata sandi untuk akun e-TOEFL Anda.",
+                    "Kata sandi baru telah digenerate oleh sistem secara otomatis. Silakan gunakan kredensial berikut untuk masuk ke platform:"
+                ],
+                [
+                    'Nama' => htmlspecialchars($user->name),
+                    'Email Akun' => htmlspecialchars($user->email),
+                    'Kata Sandi Baru' => '<code style="background: #e2ede4; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #0A3D24;">' . htmlspecialchars($newPassword) . '</code>',
+                ],
+                url('/login'),
+                "Masuk ke Akun Saya",
+                "Mohon perhatikan penulisan huruf besar dan kecil saat login. Demi keamanan, simpan kata sandi ini dengan baik."
+            );
 
             $user->update([
                 'password' => bcrypt($newPassword)
             ]);
             
-            return redirect()->route('login')->with('success', 'Kami telah mengirimkan perubahan password ke nomor Whatsapp <b>'.$request->phone_number.'</b> silakan untuk di cek, terimakasih');
+            return redirect()->route('login')->with('success', 'Kami telah mengirimkan informasi perubahan password ke email <b>'.$user->email.'</b> (dan WhatsApp jika aktif), silakan periksa kotak masuk Anda.');
 
         } else {
             return redirect()->back()->with('error', 'Nomor <b>'.$request->phone_number. '</b> tidak ditemukan, silakan klik link dibawah button kirim untuk menghubungi admin.');
