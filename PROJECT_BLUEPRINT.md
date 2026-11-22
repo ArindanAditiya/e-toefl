@@ -365,5 +365,34 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
   - `TURNSTILE_SITE_KEY` & `TURNSTILE_SECRET_KEY`
   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
 
+---
+
+## 11. SPRINT SINKRONISASI DATABASE, PEMULIHAN AKUN ADMIN, PERBAIKAN ASET SERTIFIKAT & PANDUAN TRIAL (TAHAP 6)
+
+### 11.1 Akar Masalah & Solusi Gambar Sertifikat Pecah (*Broken Image*)
+- **Penyebab Teknis:**
+  Pada file `resources/views/landing.blade.php` baris 1336 dan 1513, tag `<img>` memanggil `{{ asset('id/assets/images/portfolio-01.jpg') }}`. Berdasarkan audit berkas fisik di `public/id/assets/images/`, berkas `portfolio-01.jpg` tidak pernah ada dalam aset bawaan template. Berkas yang sesungguhnya tersedia dan beresolusi tajam adalah `sertifikat-toefl.jpg` (121 KB) dan `sertifikat-toeic.jpg` (186 KB).
+- **Solusi yang Diterapkan:**
+  1. Mengubah pemanggilan gambar pada view `landing.blade.php` mengarah ke file nyata: `{{ asset('id/assets/images/sertifikat-toefl.jpg') }}`.
+  2. Menyalin file `sertifikat-toefl.jpg` menjadi alias `portfolio-01.jpg` di `public/id/assets/images/` untuk menjamin kompatibilitas referensi lama.
+
+### 11.2 Sinkronisasi Akun Login Administrator (*"These credentials do not match our records"*)
+- **Penyebab Teknis:**
+  Data bawaan di seeder awal menggunakan email `administrator@myenglish.com` dengan hash password lama dari tahun 2022 (`77422424`). Ketika dicoba login dengan email institusi resmi Ma'had Aly (`admin@mahatbi.or.id`) atau password berbeda, autentikasi gagal karena email belum terdaftar di tabel `users`.
+- **Solusi yang Diterapkan:**
+  1. Membuat dan mengeksekusi seeder sinkronisasi `AdminUserSyncSeeder.php` yang memperbarui akun admin utama `20b2a4122c614bb68e41b1a6f3f37780`:
+     - **Email:** `admin@mahatbi.or.id`
+     - **Password:** `AdminTebuireng#2026`
+     - **Level:** `1` (Admin)
+     - **Status:** `is_active = 1`
+     - **Verifikasi:** `email_verified_at = now()`
+  2. Menyediakan akun admin sekunder `administrator@myenglish.com` dengan password yang sama (`AdminTebuireng#2026`) sebagai cadangan.
+  3. Mengimplementasikan `App\Http\Responses\LoginResponse` untuk mengarahkan akun `level == 1` langsung ke rute `admin.dashboard` dan akun mahasantri `level == 2` ke `user.dashboard`.
+
+### 11.3 Konfigurasi Environment Dinamis untuk Trial Lokal & Staging
+- Parameter `GOOGLE_REDIRECT_URI` dikonfigurasi dinamis menggunakan ekspresi `"${APP_URL}/auth/google/callback"`, sehingga secara otomatis menyesuaikan baik saat menggunakan `http://toefl.test` (Laragon lokal) maupun tunnel uji coba sementara (misal `https://trial-toefl.maul.my.id`).
+- Kunci `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` terisi default menggunakan Testing Key Cloudflare (`1x00000000000000000000AA` / `1x00000000000000000000000000000000BB`) yang selalu lolos verifikasi saat uji coba lokal.
+
+
 
 

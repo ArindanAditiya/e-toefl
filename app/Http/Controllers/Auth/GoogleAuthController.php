@@ -116,9 +116,9 @@ class GoogleAuthController extends Controller
         ]);
 
         if ($user->level == 1) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->intended('/admin/dashboard');
         }
 
-        return redirect()->route('user.dashboard');
+        return redirect()->intended('/user/dashboard');
     }
 }

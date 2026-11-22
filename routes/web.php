@@ -35,6 +35,7 @@ Route::post('upload/announcement', '\App\Http\Controllers\Admin\DashboardControl
 Route::group(['middleware' => ['auth', 'admin', 'accountIsActive']], function() {
     Route::group(['prefix' => 'admin', 'namespace' => '\App\Http\Controllers\Admin', 'as' => 'admin.'], function() {
         // dashboard
+        Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
         Route::get('/dashboard', 'DashboardController@index')->name('admin.dashboard');
         // Route::post('upload', 'DashboardController@upload')->name('admin.upload');
 

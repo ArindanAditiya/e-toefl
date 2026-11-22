@@ -1333,7 +1333,7 @@
       <div class="row align-items-center g-4">
         <div class="col-lg-6 text-center">
           <div style="background: #FFFFFF; padding: 12px; border-radius: 12px; border: 1px solid var(--mahad-border); box-shadow: 0 10px 25px rgba(0,0,0,0.06); cursor: pointer;" onclick="openCertModal()">
-            <img src="{{ asset('id/assets/images/portfolio-01.jpg') }}" alt="Contoh Sertifikat e-TOEFL Ma'had Aly" class="img-fluid rounded shadow-sm" style="max-height: 320px; object-fit: cover;">
+            <img src="{{ asset('id/assets/images/sertifikat-toefl.jpg') }}" alt="Contoh Sertifikat e-TOEFL Ma'had Aly" class="img-fluid rounded shadow-sm" style="max-height: 320px; object-fit: cover;">
             <div class="mt-2 text-muted small"><i class="fa fa-search-plus me-1"></i> Klik untuk memperbesar preview sertifikat</div>
           </div>
         </div>
@@ -1510,7 +1510,7 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-0 text-center bg-dark">
-          <img src="{{ asset('id/assets/images/portfolio-01.jpg') }}" alt="Sertifikat e-TOEFL Preview" class="img-fluid">
+          <img src="{{ asset('id/assets/images/sertifikat-toefl.jpg') }}" alt="Sertifikat e-TOEFL Preview" class="img-fluid">
         </div>
       </div>
     </div>
