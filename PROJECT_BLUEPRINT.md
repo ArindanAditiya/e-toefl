@@ -184,20 +184,20 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
 ## 6. CHECKLIST TAHAPAN KERJA & JAMINAN STABILITAS SISTEM
 
 - [x] **Fase 1: Dokumen Acuan (Blueprint):** Pemetaan arsitektur dan pembuatan `PROJECT_BLUEPRINT.md`.
-- [ ] **Fase 2: Perbaikan Bug Lingkungan & Cloudflare:**
-  - [ ] Perbaikan error autoload pada `e-toefl.test` dan sinkronisasi ke `toefl`.
-  - [ ] Penanganan PHP 8.4 deprecations warning agar tidak merusak response header.
-  - [ ] Penyesuaian SSL TrustProxies & HTTPS enforcement untuk Cloudflare Tunnel.
-- [ ] **Fase 3: Migrasi Brevo Email API:**
-  - [ ] Pembuatan `BrevoEmailService` dengan dukungan REST API v3 dan fallback SMTP.
-  - [ ] Pengalihan seluruh notifikasi registrasi, aktivasi, reset password, reminder, dan invoice/token ke Brevo Email.
-  - [ ] Pengalihan notifikasi admin (`SendNewUserNotification`, `SendTransactionNotification`) ke email admin resmi.
-  - [ ] Pembaruan file konfigurasi `.env`, `.env.example`, dan `config/mail.php`.
-- [ ] **Fase 4: Pembaruan Kontak & Branding Ma'had Aly:**
-  - [ ] Pembaruan variabel admin (WA Username, Email Mahad Aly, Alamat Tebuireng Jombang).
-  - [ ] Pembaruan landing page `/id/index.php` dengan tema warna Tebuireng (`#0A3D24`, `#007A1E`, `#FFFFFF`, `#C69C2B`) bebas AI slop.
-  - [ ] Pembaruan meta tags SEO, favicon, dan logo e-TOEFL Ma'had Aly.
-  - [ ] Pembaruan footer dan komponen layout admin/user.
-- [ ] **Fase 5: Validasi & Pengujian Inti Ujian:**
-  - [ ] Verifikasi tidak ada regresi pada login, pengerjaan soal, pemutaran audio listening, dan perhitungan nilai.
-  - [ ] Verifikasi hasil build Vite dan aset statis.
+- [x] **Fase 2: Perbaikan Bug Lingkungan & Cloudflare:**
+  - [x] Perbaikan error autoload pada `e-toefl.test` dan sinkronisasi ke `toefl`.
+  - [x] Penanganan PHP 8.4 deprecations warning agar tidak merusak response header.
+  - [x] Penyesuaian SSL TrustProxies & HTTPS enforcement untuk Cloudflare Tunnel.
+- [x] **Fase 3: Migrasi Brevo Email API:**
+  - [x] Pembuatan `BrevoEmailService` dengan dukungan REST API v3 dan fallback SMTP.
+  - [x] Pengalihan seluruh notifikasi registrasi, aktivasi, reset password, reminder, dan invoice/token ke Brevo Email.
+  - [x] Pengalihan notifikasi admin (`SendNewUserNotification`, `SendTransactionNotification`) ke email admin resmi.
+  - [x] Pembaruan file konfigurasi `.env`, `.env.example`, dan `config/mail.php`.
+- [x] **Fase 4: Pembaruan Kontak & Branding Ma'had Aly:**
+  - [x] Pembaruan variabel admin (WA Username, Email Mahad Aly, Alamat Tebuireng Jombang).
+  - [x] Pembaruan landing page `/id/index.php` dengan tema warna Tebuireng (`#0A3D24`, `#007A1E`, `#FFFFFF`, `#C69C2B`) bebas AI slop.
+  - [x] Pembaruan meta tags SEO, favicon, dan logo e-TOEFL Ma'had Aly.
+  - [x] Pembaruan footer dan komponen layout admin/user.
+- [x] **Fase 5: Validasi & Pengujian Inti Ujian:**
+  - [x] Verifikasi tidak ada regresi pada login, pengerjaan soal, pemutaran audio listening, dan perhitungan nilai.
+  - [x] Verifikasi hasil build Vite dan aset statis.
