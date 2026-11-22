@@ -473,6 +473,39 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
 ### 13.4 Panduan Sistem dan Bank Soal (`PANDUAN_SISTEM_DAN_BANK_SOAL.md`)
 - Menyusun panduan komprehensif untuk pengelola/admin mencakup tutorial input soal & audio listening bebas error, panduan alur pendaftaran, sistem paket soal, anti-cheat & pembukaan blokir peserta, serta penerbitan e-sertifikat ber-QR Code.
 
+---
+
+## 14. SPRINT STABILISASI UJIAN, SINKRONISASI TUNNEL/HTTPS, & PEMBARUAN LOGO SERTIFIKAT (TAHAP 9)
+
+### 14.1 Penggantian Total Logo Lama pada e-Sertifikat dengan Logo Resmi Ma'had Aly
+- **Akar Masalah:**
+  Pada implementasi e-Sertifikat sebelumnya, kode Blade memeriksa keberadaan file gambar dengan prioritas salah: `@if(file_exists(public_path('assets/images/logo-icon.png')))` yang ternyata merupakan ikon ombak biru bawaan template lama, sebelum memeriksa logo hijau resmi Ma'had Aly (`logo.png`). Hal yang sama terjadi pada watermark latar belakang.
+- **Solusi yang Diterapkan:**
+  1. Memperbarui `resources/views/certificate/certificate_toefl.blade.php` dan `resources/views/certificate/certificate_toeic.blade.php`: memprioritaskan secara ketat `public_path('assets/images/logo.png')` (file logo lingkaran hijau Ma'had Aly Hasyim Asy'ari Tebuireng yang sama dengan navbar utama).
+  2. Menerapkan logo hijau Ma'had Aly yang sama sebagai *watermark* transparan (opacity 6%) di tengah lembar sertifikat agar serasi dan bernuansa akademis pesantren.
+  3. Memperbarui seluruh sampel render HTML dan gambar landing page (`sertifikat-toefl.jpg`, `sertifikat-toeic.jpg`, `portfolio-01.jpg`) sehingga sinkron dengan logo resmi terbaru.
+
+### 14.2 Sinkronisasi Reverse Proxy Cloudflare Tunnel & Eliminasi Mixed Content
+- **Akar Masalah:**
+  Ketika aplikasi diakses melalui Cloudflare Tunnel (`https://trial-toefl.maul.my.id`), permintaan diteruskan ke web server lokal melalui protokol HTTP. Jika Laravel tidak mengonfigurasi header reverse proxy (`TrustProxies`) dengan benar, helper `asset()` dan `url()` menganggap skema koneksi adalah `http://`, sehingga memuat aset CSS/JS via HTTP dan memicu *Mixed Content Block* di browser (tampilan berantakan, styling rusak).
+- **Solusi yang Diterapkan:**
+  1. Konfigurasi `App\Http\Middleware\TrustProxies`:
+     Mengatur `protected $proxies = '*';` dan menyertakan header `Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO | Request::HEADER_X_FORWARDED_AWS_ELB;`.
+  2. Logika Deteksi Dinamis di `App\Providers\AppServiceProvider.php`:
+     Menambahkan deteksi otomatis skema HTTPS dari header Cloudflare (`HTTP_X_FORWARDED_PROTO == 'https'` atau `HTTP_CF_VISITOR` mengandung `https` atau `request()->isSecure()`) untuk menjalankan `URL::forceScheme('https')`. Dengan demikian, saat diakses lewat Tunnel publik seluruh aset dimuat aman via HTTPS, sementara saat diakses di jaringan lokal (`http://toefl.test`) tetap dimuat via HTTP tanpa error sertifikat SSL lokal.
+
+### 14.3 Penanganan Bug "Server Error / Silakan Refresh" Saat Pengerjaan Ujian
+- **Akar Masalah:**
+  1. *Ekskusi Endpoint Berulang & Payload Masif:* Pada `answerQuestion` dan `audioPlayed` di `ExamController.php`, setiap kali tombol opsi atau audio diklik, controller mengembalikan seluruh objek `$grade` yang memuat ratusan butir soal berseri JSON besar. Hal ini membebani bandwidth dan memicu latency/timeout pada koneksi seluler atau tunnel.
+  2. *Kurangnya Defensive Validation:* Jika query pencarian index soal (`array_search`) menghasilkan `false`, PHP mencoba menulis ke array dengan index yang tidak valid, memicu HTTP 500.
+  3. *CSRF Token Mismatch (HTTP 419):* Pada durasi ujian panjang (45–120 menit) atau ketika terjadi fluktuasi jaringan, CSRF token session dapat kedaluwarsa, menyebabkan request AJAX `axios.post` ditolak dengan status 419 yang memicu `alert('error silakan refresh halaman.')`.
+  4. *UI Terhambat:* Pembaruan jawaban di UI sebelumnya menunggu respons jaringan selesai (*pessimistic update*), membuat peserta mengklik tombol berulang kali saat koneksi lambat.
+- **Solusi yang Diterapkan:**
+  1. Mengecualikan endpoint simpan jawaban dan audio dari verifikasi CSRF di `VerifyCsrfToken.php` (`user/exams/*/exam-answer`, `user/exams/*/audio-played`, `user/exams/*/decrement-tolerance`), dengan pengamanan ganda di controller memastikan kepemilikan sesi (`$grade->user_id === auth()->id()`).
+  2. Mengoptimalkan controller agar mengembalikan respons JSON ultra-ringan (`status: success`, under 100 bytes) dan menerapkan blok `try-catch` dengan pencarian ID soal bertipe aman.
+  3. Menerapkan *Optimistic UI Update* di `Question.vue`: warna tombol jawaban langsung aktif saat diklik, dilengkapi *auto-retry* 2 kali di latar belakang jika ada gangguan jaringan sementara, dan mengganti popup `alert()` pemblokir dengan *toast notification* non-intrusif.
+
+
 
 
 

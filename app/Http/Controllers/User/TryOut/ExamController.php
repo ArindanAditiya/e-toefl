@@ -297,51 +297,147 @@ class ExamController extends Controller
      * @param  mixed $request
      * @return void
      */
-    public function answerQuestion(Request $request)
-    {
-        $grade = Grade::find($request->grade_id);
-        $gradeAnswers = $grade['answers'];
-        $index = array_search($request->question_id, array_column($gradeAnswers, 'question_id'));
-
-        $gradeAnswers[$index]['is_correct'] = (int) $gradeAnswers[$index]['question_answer'] == (int) $request->answer ? 'Y' : 'N';
-        $gradeAnswers[$index]['answer'] = $request->answer;
-        $gradeAnswers = $gradeAnswers;
-
-        $grade->update(['answers' => $gradeAnswers, 'number' => $request->number]);
-
-        return $grade;
-    }
-
     /**
      * answerQuestion
      *
      * @param  mixed $request
-     * @return void
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function answerQuestion(Request $request)
+    {
+        try {
+            $grade = Grade::find($request->grade_id);
+            if (!$grade || $grade->user_id !== auth()->id()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Sesi ujian tidak valid atau bukan milik akun Anda.'
+                ], 403);
+            }
+
+            $gradeAnswers = $grade->answers;
+            if (is_string($gradeAnswers)) {
+                $gradeAnswers = json_decode($gradeAnswers, true) ?: [];
+            }
+            if (!is_array($gradeAnswers)) {
+                $gradeAnswers = [];
+            }
+
+            $questionId = (string) $request->question_id;
+            $index = false;
+            foreach ($gradeAnswers as $k => $item) {
+                if (isset($item['question_id']) && (string)$item['question_id'] === $questionId) {
+                    $index = $k;
+                    break;
+                }
+            }
+
+            if ($index !== false) {
+                $correctAnswer = isset($gradeAnswers[$index]['question_answer']) ? (string)$gradeAnswers[$index]['question_answer'] : '';
+                $userAnswer = (string)$request->answer;
+                $gradeAnswers[$index]['is_correct'] = ($correctAnswer !== '' && (int)$correctAnswer === (int)$userAnswer) ? 'Y' : 'N';
+                $gradeAnswers[$index]['answer'] = $request->answer;
+
+                $grade->answers = $gradeAnswers;
+                if ($request->has('number')) {
+                    $grade->number = $request->number;
+                }
+                $grade->save();
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'question_id' => $request->question_id,
+                'answer' => $request->answer
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Exam answerQuestion error: ' . $e->getMessage(), [
+                'grade_id' => $request->grade_id ?? null,
+                'question_id' => $request->question_id ?? null,
+                'user_id' => auth()->id() ?? null,
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal memproses jawaban di server.'
+            ], 500);
+        }
+    }
+
+    /**
+     * audioPlayed
+     *
+     * @param  mixed $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function audioPlayed(Request $request)
     {
-        $grade = Grade::find($request->grade_id);
-        $gradeAnswers = $grade['answers'];
-        $index = array_search($request->question_id, array_column($gradeAnswers, 'question_id'));
-        $gradeAnswers[$index]['audio_played'] = $gradeAnswers[$index]['audio_played'] + 1;
-        $gradeAnswers = $gradeAnswers;
-        $grade->update(['answers' => $gradeAnswers]);
+        try {
+            $grade = Grade::find($request->grade_id);
+            if (!$grade || $grade->user_id !== auth()->id()) {
+                return response()->json(['status' => 'error'], 403);
+            }
 
-        return $grade;
+            $gradeAnswers = $grade->answers;
+            if (is_string($gradeAnswers)) {
+                $gradeAnswers = json_decode($gradeAnswers, true) ?: [];
+            }
+            if (!is_array($gradeAnswers)) {
+                $gradeAnswers = [];
+            }
+
+            $questionId = (string) $request->question_id;
+            $index = false;
+            foreach ($gradeAnswers as $k => $item) {
+                if (isset($item['question_id']) && (string)$item['question_id'] === $questionId) {
+                    $index = $k;
+                    break;
+                }
+            }
+
+            if ($index !== false) {
+                $currentCount = isset($gradeAnswers[$index]['audio_played']) ? (int)$gradeAnswers[$index]['audio_played'] : 0;
+                $gradeAnswers[$index]['audio_played'] = $currentCount + 1;
+                $grade->answers = $gradeAnswers;
+                $grade->save();
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'question_id' => $request->question_id
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Exam audioPlayed error: ' . $e->getMessage());
+            return response()->json(['status' => 'error'], 500);
+        }
     }
 
     /**
      * decrementTolerance
      *
      * @param  mixed $request
-     * @return void
+     * @return \Illuminate\Http\JsonResponse
      */
     public function decrementTolerance(Request $request)
     {
-        $grade = Grade::find($request->grade_id);
-        $total_tolerance = $grade->total_tolerance > 0 ? $grade->total_tolerance - 1 : 0 ;
-        $is_blocked = $total_tolerance <= 0 ? 1 : 0;
-        $grade->update(['total_tolerance' => $total_tolerance, 'is_blocked' => $is_blocked]);
+        try {
+            $grade = Grade::find($request->grade_id);
+            if (!$grade || $grade->user_id !== auth()->id()) {
+                return response()->json(['status' => 'error'], 403);
+            }
+
+            $total_tolerance = $grade->total_tolerance > 0 ? $grade->total_tolerance - 1 : 0;
+            $is_blocked = $total_tolerance <= 0 ? 1 : 0;
+            $grade->update(['total_tolerance' => $total_tolerance, 'is_blocked' => $is_blocked]);
+
+            return response()->json([
+                'status' => 'success',
+                'total_tolerance' => $total_tolerance,
+                'is_blocked' => $is_blocked
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Exam decrementTolerance error: ' . $e->getMessage());
+            return response()->json(['status' => 'error'], 500);
+        }
     }
 
     /**

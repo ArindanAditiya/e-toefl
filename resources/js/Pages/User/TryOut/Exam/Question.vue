@@ -408,44 +408,63 @@
             })
 
             const submitAnswer = ((question_id, answer) => {
-                axios.post(`/user/exams/${props.exam.id}/exam-answer`, {
+                // Optimistic UI update: langsung tandai tombol sebagai terpilih tanpa jeda
+                props.questionLists[indexPage.value]['answer'] = answer;
+
+                if(props.exam.next_question_automatically == 1) {
+                    if(indexPage.value < Object.keys(props.questionLists).length - 1) {
+                        nextPage();
+                    }
+                }
+
+                const payload = {
                     grade_id: props.grade.id,
                     question_id: question_id,
                     answer: answer,
                     number: indexPage.value,
-                })
-                .then(function (response) {
-                    props.questionLists[indexPage.value]['answer'] = answer;
-                    if(props.exam.next_question_automatically == 1) {
-                        if(indexPage.value < Object.keys(props.questionLists).length - 1) {
-                            nextPage();
-                        }
-                    }
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    alert('error silakan refresh halaman.');
-                });
+                };
+
+                const tryPostAnswer = (retries = 2) => {
+                    axios.post(`/user/exams/${props.exam.id}/exam-answer`, payload)
+                        .then(function (response) {
+                            // Jawaban berhasil disinkronkan ke server
+                        })
+                        .catch(function (error) {
+                            console.warn("Gagal simpan jawaban ke server (sisa percobaan: " + retries + "):", error);
+                            if (retries > 0) {
+                                setTimeout(() => tryPostAnswer(retries - 1), 1000);
+                            } else {
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'info',
+                                    title: 'Jawaban tersimpan di peramban. Sistem sedang menyinkronkan kembali...',
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+                            }
+                        });
+                };
+
+                tryPostAnswer();
             });
 
             const endedAudio = ((description = '') => {
+                props.questionLists[indexPage.value]['audio_played'] = props.questionLists[indexPage.value]['audio_played'] + 1;
+
+                if(props.questionLists[indexPage.value]['audio_played'] < props.questionLists[indexPage.value]['audio_played_limit']) {
+                    $('#playButtonAudio').show();
+                }
+
+                if(description == 'nextPage') {
+                    nextPage();
+                }
+
                 axios.post(`/user/exams/${props.exam.id}/audio-played`, {
                     grade_id: props.grade.id,
                     question_id: props.questionLists[indexPage.value].question_id,
-                })
-                .then(function (response) {
-                    props.questionLists[indexPage.value]['audio_played'] = props.questionLists[indexPage.value]['audio_played'] + 1;
-
-                    if(props.questionLists[indexPage.value]['audio_played'] < props.questionLists[indexPage.value]['audio_played_limit']) {
-                        $('#playButtonAudio').show();
-                    }
-
-                    if(description == 'nextPage') {
-                        nextPage();
-                    }
-                })
-                .catch(function (error) {
-                    alert('error silakan refresh halaman.');
+                }).catch(function (error) {
+                    console.warn("Gagal sinkronisasi pemutaran audio:", error);
                 });
             });
 

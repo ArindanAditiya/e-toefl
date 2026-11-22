@@ -295,10 +295,14 @@
         <div class="corner-ornament corner-br"></div>
 
         <div class="cert-inner">
-            <!-- Center Soft Watermark -->
-            @if(file_exists(public_path('assets/images/logo-icon.png')))
+            <!-- Center Soft Watermark (Official Green Ma'had Aly Logo) -->
+            @if(file_exists(public_path('assets/images/logo.png')))
                 <div class="watermark">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/logo-icon.png'))) }}" style="width: 200px; height: auto;" alt="Watermark">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/logo.png'))) }}" style="width: 220px; height: auto;" alt="Watermark Ma'had Aly">
+                </div>
+            @elseif(file_exists(public_path('id/assets/images/logo.png')))
+                <div class="watermark">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('id/assets/images/logo.png'))) }}" style="width: 220px; height: auto;" alt="Watermark Ma'had Aly">
                 </div>
             @endif
 
@@ -306,10 +310,10 @@
             <table class="header-table">
                 <tr>
                     <td class="header-logo">
-                        @if(file_exists(public_path('assets/images/logo-icon.png')))
-                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/logo-icon.png'))) }}" alt="Logo Ma'had Aly">
+                        @if(file_exists(public_path('assets/images/logo.png')))
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/logo.png'))) }}" alt="Logo Resmi Ma'had Aly">
                         @elseif(file_exists(public_path('id/assets/images/logo.png')))
-                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('id/assets/images/logo.png'))) }}" alt="Logo Ma'had Aly">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('id/assets/images/logo.png'))) }}" alt="Logo Resmi Ma'had Aly">
                         @endif
                     </td>
                     <td class="header-text">
