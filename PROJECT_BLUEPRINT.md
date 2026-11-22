@@ -248,3 +248,24 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
   - `app/Http/Requests/User/ForgotPasswordRequest.php` & `app/Http/Controllers/ActivationController.php`: Mendukung pencarian akun via Email untuk penerbitan password baru via Brevo.
   - `public/id/index.php`: Memperbarui teks panduan Langkah 1 Ujian menjadi pendaftaran mandiri via email aktif.
 
+---
+
+## 8. SPRINT PERBAIKAN TAHAP 3 (MOBILE MENU & BREVO AUTH FIX)
+
+### 8.1 Dokumentasi Masalah Teknis
+1. **Bug Mobile Header (iPhone 13 Pro / Layar < 768px):**
+   - *Gejala:* Item menu navigasi (`Beranda`, `Alur Ujian`, `TOEFL`, `TOEIC`, `Sertifikat`, `Hubungi Kami`, `Masuk Peserta`) terbuka dan menumpuk secara vertikal di samping logo, menyebabkan tinggi header meregang hingga >200px dan menutupi judul hero `e-TOEFL Ma'had Aly Hasyim Asy'ari`.
+   - *Penyebab:* Rule CSS `header.header-area .main-nav .nav { display: flex !important; }` diterapkan secara global tanpa pembatas `@media (min-width: 992px)`. Hal ini menimpa CSS responsif bawaan dan menonaktifkan mekanisme jQuery `slideToggle()` pada hamburger button `.menu-trigger`.
+   - *Solusi:* Membatasi `display: flex !important` hanya pada viewport desktop (`@media (min-width: 992px)`). Pada viewport mobile (`@media (max-width: 991px)`), tinggi header dikunci ringkas (64px), logo di sebelah kiri (38px), hamburger menu button di sebelah kanan, menu `.nav` dilipat rapi dalam dropdown drawer (`display: none` / `mobile-open`) dengan background putih, shadow halus, dan padding proporsional. Padding atas hero banner pada mobile disesuaikan (`padding-top: 90px`) sehingga judul hero terlihat 100% utuh tanpa terpotong.
+
+2. **Bug Registrasi (Brevo SMTP Auth 502):**
+   - *Gejala:* `Symfony\Component\Mailer\Exception\TransportException: Expected response code "250" but got code "502", with message "502 5.7.0 Please authenticate first"` saat pendaftaran peserta baru di `CreateNewUser.php:106`.
+   - *Penyebab:* 
+     a. Di `CreateNewUser.php:106`, sistem memanggil `$admin->notify(new SendNewUserNotification($user))`. Notification class ini menggunakan channel default `['mail']` yang otomatis menghubungi SMTP transport Laravel (`smtp-relay.brevo.com:587`). Karena kredensial SMTP `MAIL_USERNAME` dan `MAIL_PASSWORD` di `.env` kosong, server Brevo menolak koneksi dengan pesan `502 5.7.0 Please authenticate first`.
+     b. Fallback transport pada `BrevoEmailService::sendEmail` juga memanggil `Mail::html()` tanpa mengecek apakah kredensial SMTP tersedia, sehingga jika REST API key belum disetel, error yang sama terjadi.
+   - *Solusi:*
+     a. Mengubah `BrevoEmailService` agar menggunakan **Brevo Transactional Email REST API v3 (`https://api.brevo.com/v3/smtp/email`)** via Laravel `Http::withHeaders(['api-key' => ...])` secara langsung dan andal.
+     b. Menambahkan pengecekan kredensial sebelum fallback ke SMTP Laravel. Jika kredensial SMTP kosong di lingkungan lokal, sistem beralih aman ke logging (`Log::warning`/`Log::info`) tanpa melempar exception fatal ke pengguna.
+     c. Mengubah `SendNewUserNotification` dan `SendTransactionNotification` agar memanggil email service resmi dan membungkus `$admin->notify()` dalam blok `try-catch (\Throwable $e)` sehingga proses registrasi peserta selalu sukses dan akun berhasil dibuat.
+
+

@@ -87,23 +87,31 @@ class CreateNewUser implements CreatesNewUsers
             $registeredDetails['Nomor WhatsApp'] = htmlspecialchars($input['phone_number']);
         }
 
-        sendBrevoNotification(
-            $user->email,
-            $user->name,
-            "Aktivasi Akun e-TOEFL - Ma'had Aly Hasyim Asy'ari Tebuireng",
-            [
-                "Selamat datang di platform resmi Ujian <strong>e-TOEFL Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang</strong>.",
-                "Akun Anda telah berhasil didaftarkan. Untuk mulai menggunakan akun dan mengikuti ujian prediksi TOEFL/TOEIC, silakan klik tombol aktivasi di bawah ini:"
-            ],
-            $registeredDetails,
-            $activationUrl,
-            "Aktifkan Akun Saya Sekarang",
-            "Tautan aktivasi berlaku untuk memverifikasi keabsahan data peserta. Mohon jaga kerahasiaan akun Anda."
-        );
+        try {
+            sendBrevoNotification(
+                $user->email,
+                $user->name,
+                "Aktivasi Akun e-TOEFL - Ma'had Aly Hasyim Asy'ari Tebuireng",
+                [
+                    "Selamat datang di platform resmi Ujian <strong>e-TOEFL Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang</strong>.",
+                    "Akun Anda telah berhasil didaftarkan. Untuk mulai menggunakan akun dan mengikuti ujian prediksi TOEFL/TOEIC, silakan klik tombol aktivasi di bawah ini:"
+                ],
+                $registeredDetails,
+                $activationUrl,
+                "Aktifkan Akun Saya Sekarang",
+                "Tautan aktivasi berlaku untuk memverifikasi keabsahan data peserta. Mohon jaga kerahasiaan akun Anda."
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Registration email dispatch error: " . $e->getMessage());
+        }
         
-        $admin = User::find('20b2a4122c614bb68e41b1a6f3f37780');
-        if ($admin) {
-            $admin->notify(new SendNewUserNotification($user));
+        try {
+            $admin = User::find('20b2a4122c614bb68e41b1a6f3f37780');
+            if ($admin) {
+                $admin->notify(new SendNewUserNotification($user));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Registration admin notification error: " . $e->getMessage());
         }
 
         return $user;

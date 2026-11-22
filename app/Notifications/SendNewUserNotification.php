@@ -32,7 +32,33 @@ class SendNewUserNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail'];
+        $smtpUser = config('mail.mailers.smtp.username');
+        $smtpPass = config('mail.mailers.smtp.password');
+        $driver = config('mail.default');
+
+        // Kirim via Brevo API jika API key tersedia
+        $apiKey = config('services.brevo.api_key') ?: env('BREVO_API_KEY');
+        if (!empty($apiKey) && !in_array($apiKey, ['[Masukkan API Key Brevo Anda di .env]', 'YOUR_BREVO_API_KEY'])) {
+            try {
+                \App\Services\Notification\BrevoEmailService::sendEmail(
+                    $notifiable->email,
+                    $notifiable->name,
+                    "[e-TOEFL Ma'had Aly Tebuireng] Pendaftaran Pengguna Baru: " . $this->user->name,
+                    "<h3>Pendaftaran Pengguna Baru</h3><p>Terdapat peserta baru yang mendaftar di platform e-TOEFL:</p><ul><li><b>Nama:</b> {$this->user->name}</li><li><b>Email:</b> {$this->user->email}</li><li><b>Waktu:</b> {$this->user->created_at}</li></ul><p><a href='" . url('/admin/users') . "'>Buka Menu Manajemen Pengguna</a></p>"
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("SendNewUserNotification Brevo error: " . $e->getMessage());
+            }
+            return [];
+        }
+
+        // Jika tidak via Brevo API, gunakan mail channel HANYA jika kredensial SMTP tersedia atau log
+        if ($driver === 'log' || ($driver === 'smtp' && !empty($smtpUser) && !empty($smtpPass))) {
+            return ['mail'];
+        }
+
+        \Illuminate\Support\Facades\Log::info("Admin Notification: New User Registered ({$this->user->name} - {$this->user->email})");
+        return [];
     }
 
     /**

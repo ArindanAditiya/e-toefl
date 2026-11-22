@@ -129,123 +129,294 @@ $homeUrl = '/';
         color: var(--mahad-dark);
       }
 
-      /* Navbar Styling & Sticky Header Fixes (Anti-Truncation, Sempurna saat di-scroll) */
+      /* ===== Navbar & Header Styling (Desktop & Mobile-First Ma'had Aly Standard) ===== */
       header.header-area {
         background-color: #FFFFFF !important;
         box-shadow: 0 2px 14px rgba(10, 61, 36, 0.08) !important;
         border-bottom: 3px solid var(--mahad-gold) !important;
-        height: auto !important;
-        min-height: 82px !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
         z-index: 9999 !important;
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
       }
-      header.header-area .main-nav {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        min-height: 82px !important;
-        padding: 8px 0 !important;
-        background: transparent !important;
-        overflow: visible !important;
+
+      /* Desktop Viewport (>= 992px) */
+      @media (min-width: 992px) {
+        header.header-area {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          height: auto !important;
+          min-height: 82px !important;
+        }
+        header.header-area .main-nav {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          min-height: 82px !important;
+          padding: 8px 0 !important;
+          background: transparent !important;
+          overflow: visible !important;
+        }
+        header.header-area .main-nav .logo {
+          display: flex !important;
+          align-items: center !important;
+          line-height: 1 !important;
+          float: none !important;
+          margin-right: 25px !important;
+          text-decoration: none !important;
+        }
+        .header-logo-img {
+          height: 52px !important;
+          width: auto !important;
+          max-width: 270px !important;
+          object-fit: contain !important;
+          display: block !important;
+          transition: all 0.3s ease !important;
+        }
+        /* Sticky Header saat Halaman Di-scroll */
+        header.header-area.background-header {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          min-height: 72px !important;
+          height: auto !important;
+          background-color: rgba(255, 255, 255, 0.98) !important;
+          box-shadow: 0 4px 18px rgba(10, 61, 36, 0.12) !important;
+          border-bottom: 3px solid var(--mahad-gold) !important;
+          z-index: 99999 !important;
+          padding: 0 !important;
+        }
+        header.header-area.background-header .main-nav {
+          min-height: 72px !important;
+          padding: 5px 0 !important;
+        }
+        header.header-area.background-header .header-logo-img {
+          height: 46px !important;
+          max-width: 240px !important;
+        }
+        /* Spacing dan Tampilan Menu Navigasi Desktop */
+        header.header-area .main-nav .nav {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          float: none !important;
+          list-style: none !important;
+        }
+        header.header-area .main-nav .nav li {
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        header.header-area .main-nav .nav li a {
+          display: inline-block !important;
+          padding: 8px 14px !important;
+          height: auto !important;
+          line-height: normal !important;
+          color: var(--mahad-dark) !important;
+          font-weight: 600 !important;
+          font-size: 14.5px !important;
+          border-radius: 6px !important;
+          transition: all 0.2s ease !important;
+        }
+        header.header-area .main-nav .nav li a:hover,
+        header.header-area .main-nav .nav li a.active {
+          color: var(--mahad-primary) !important;
+          background-color: #EBF5EE !important;
+        }
+        header.header-area .main-nav .nav li .main-red-button a,
+        .main-button a,
+        .main-button button,
+        .btn-mahad-primary {
+          background-color: var(--mahad-primary) !important;
+          border: none !important;
+          color: var(--mahad-white) !important;
+          font-weight: 700 !important;
+          border-radius: 6px !important;
+          box-shadow: 0 4px 10px rgba(0, 122, 30, 0.25) !important;
+          padding: 9px 18px !important;
+          transition: all 0.3s ease !important;
+        }
+        header.header-area .main-nav .nav li .main-red-button a:hover,
+        .main-button a:hover,
+        .main-button button:hover,
+        .btn-mahad-primary:hover {
+          background-color: var(--mahad-dark) !important;
+          box-shadow: 0 4px 14px rgba(10, 61, 36, 0.35) !important;
+          color: #FFFFFF !important;
+        }
+        header.header-area .menu-trigger {
+          display: none !important;
+        }
       }
-      header.header-area .main-nav .logo {
-        display: flex !important;
-        align-items: center !important;
-        line-height: 1 !important;
-        float: none !important;
-        margin-right: 25px !important;
-        text-decoration: none !important;
+
+      /* Mobile Viewport (< 992px) - iPhone / Android Phone Standard */
+      @media (max-width: 991px) {
+        header.header-area {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          height: 64px !important;
+          min-height: 64px !important;
+          background-color: #FFFFFF !important;
+          box-shadow: 0 2px 10px rgba(10, 61, 36, 0.1) !important;
+          border-bottom: 3px solid var(--mahad-gold) !important;
+          padding: 0 15px !important;
+          z-index: 99999 !important;
+        }
+        header.header-area .container {
+          padding: 0 !important;
+          max-width: 100% !important;
+        }
+        header.header-area .main-nav {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          min-height: 64px !important;
+          height: 64px !important;
+          padding: 0 !important;
+          position: relative !important;
+          background: transparent !important;
+          overflow: visible !important;
+        }
+        header.header-area .main-nav .logo {
+          margin: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+        }
+        .header-logo-img {
+          height: 38px !important;
+          max-width: 210px !important;
+          width: auto !important;
+          object-fit: contain !important;
+          display: block !important;
+        }
+        /* Hamburger Button */
+        header.header-area .menu-trigger {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+          align-items: center !important;
+          width: 42px !important;
+          height: 42px !important;
+          border-radius: 8px !important;
+          background-color: #EBF5EE !important;
+          border: 1px solid #C2E2CC !important;
+          cursor: pointer !important;
+          position: relative !important;
+          z-index: 100000 !important;
+          text-decoration: none !important;
+        }
+        header.header-area .menu-trigger span {
+          display: block !important;
+          position: relative !important;
+          width: 22px !important;
+          height: 2.5px !important;
+          background-color: #0A3D24 !important;
+          border-radius: 2px !important;
+          transition: all 0.3s ease !important;
+          text-indent: -9999px;
+        }
+        header.header-area .menu-trigger span:before,
+        header.header-area .menu-trigger span:after {
+          content: '' !important;
+          position: absolute !important;
+          left: 0 !important;
+          width: 22px !important;
+          height: 2.5px !important;
+          background-color: #0A3D24 !important;
+          border-radius: 2px !important;
+          transition: all 0.3s ease !important;
+        }
+        header.header-area .menu-trigger span:before {
+          top: -7px !important;
+        }
+        header.header-area .menu-trigger span:after {
+          top: 7px !important;
+        }
+        header.header-area .menu-trigger.active span {
+          background-color: transparent !important;
+        }
+        header.header-area .menu-trigger.active span:before {
+          top: 0 !important;
+          transform: rotate(45deg) !important;
+        }
+        header.header-area .menu-trigger.active span:after {
+          top: 0 !important;
+          transform: rotate(-45deg) !important;
+        }
+        /* Mobile Menu Drawer */
+        header.header-area .main-nav .nav {
+          display: none;
+          position: fixed !important;
+          top: 64px !important;
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          background-color: #FFFFFF !important;
+          box-shadow: 0 16px 32px rgba(10, 61, 36, 0.18) !important;
+          border-top: 2px solid #007A1E !important;
+          border-bottom: 4px solid var(--mahad-gold) !important;
+          padding: 16px 20px 24px 20px !important;
+          flex-direction: column !important;
+          gap: 6px !important;
+          z-index: 99999 !important;
+          list-style: none !important;
+          margin: 0 !important;
+          max-height: calc(100vh - 64px) !important;
+          overflow-y: auto !important;
+        }
+        header.header-area .main-nav .nav.mobile-active {
+          display: flex !important;
+        }
+        header.header-area .main-nav .nav li {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        header.header-area .main-nav .nav li a {
+          display: block !important;
+          width: 100% !important;
+          padding: 11px 16px !important;
+          font-size: 15px !important;
+          font-weight: 600 !important;
+          color: #0A3D24 !important;
+          border-radius: 8px !important;
+          text-align: left !important;
+          background: transparent !important;
+        }
+        header.header-area .main-nav .nav li a:hover,
+        header.header-area .main-nav .nav li a.active {
+          background-color: #EBF5EE !important;
+          color: #007A1E !important;
+        }
+        header.header-area .main-nav .nav li .main-red-button {
+          margin-top: 10px !important;
+          width: 100% !important;
+        }
+        header.header-area .main-nav .nav li .main-red-button a {
+          display: block !important;
+          width: 100% !important;
+          text-align: center !important;
+          padding: 12px !important;
+          background-color: #007A1E !important;
+          color: #FFFFFF !important;
+          border-radius: 8px !important;
+          font-weight: 700 !important;
+        }
+        /* Menghilangkan penutupan Judul Hero di Layar HP */
+        .main-banner {
+          padding-top: 96px !important;
+          padding-bottom: 50px !important;
+        }
+        .main-banner .left-content h1 {
+          font-size: 27px !important;
+          line-height: 1.3 !important;
+        }
       }
-      .header-logo-img {
-        height: 52px !important;
-        width: auto !important;
-        max-width: 270px !important;
-        object-fit: contain !important;
-        display: block !important;
-        transition: all 0.3s ease !important;
-      }
-      /* Sticky Header saat Halaman Di-scroll */
-      header.header-area.background-header {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        min-height: 72px !important;
-        height: auto !important;
-        background-color: rgba(255, 255, 255, 0.98) !important;
-        box-shadow: 0 4px 18px rgba(10, 61, 36, 0.12) !important;
-        border-bottom: 3px solid var(--mahad-gold) !important;
-        z-index: 99999 !important;
-        padding: 0 !important;
-      }
-      header.header-area.background-header .main-nav {
-        min-height: 72px !important;
-        padding: 5px 0 !important;
-      }
-      header.header-area.background-header .header-logo-img {
-        height: 46px !important;
-        max-width: 240px !important;
-      }
-      /* Spacing dan Tampilan Menu Navigasi */
-      header.header-area .main-nav .nav {
-        display: flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        float: none !important;
-        list-style: none !important;
-      }
-      header.header-area .main-nav .nav li {
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      header.header-area .main-nav .nav li a {
-        display: inline-block !important;
-        padding: 8px 14px !important;
-        height: auto !important;
-        line-height: normal !important;
-        color: var(--mahad-dark) !important;
-        font-weight: 600 !important;
-        font-size: 14.5px !important;
-        border-radius: 6px !important;
-        transition: all 0.2s ease !important;
-      }
-      header.header-area .main-nav .nav li a:hover,
-      header.header-area .main-nav .nav li a.active {
-        color: var(--mahad-primary) !important;
-        background-color: #EBF5EE !important;
-      }
-      header.header-area .main-nav .nav li .main-red-button a,
-      .main-button a,
-      .main-button button,
-      .btn-mahad-primary {
-        background-color: var(--mahad-primary) !important;
-        border: none !important;
-        color: var(--mahad-white) !important;
-        font-weight: 700 !important;
-        border-radius: 6px !important;
-        box-shadow: 0 4px 10px rgba(0, 122, 30, 0.25) !important;
-        padding: 9px 18px !important;
-        transition: all 0.3s ease !important;
-      }
-      header.header-area .main-nav .nav li .main-red-button a:hover,
-      .main-button a:hover,
-      .main-button button:hover,
-      .btn-mahad-primary:hover {
-        background-color: var(--mahad-dark) !important;
-        box-shadow: 0 4px 14px rgba(10, 61, 36, 0.35) !important;
-        color: #FFFFFF !important;
-      }
-      /* Mobile Menu Trigger alignment */
-      header.header-area .menu-trigger {
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-      }
+
       /* Alur Ujian Background Gradient Tanpa Gelombang Merah */
       .about-us {
         background-image: none !important;
@@ -921,6 +1092,23 @@ $homeUrl = '/';
         }
 
         window.open(finalLink, '_blank');
+    });
+
+    // Mobile Hamburger Menu Interactive Handler
+    $(document).ready(function () {
+        $('.menu-trigger').off('click').on('click', function (e) {
+            e.preventDefault();
+            $(this).toggleClass('active');
+            $('.header-area .main-nav .nav').toggleClass('mobile-active');
+        });
+
+        // Tutup menu drawer otomatis saat salah satu tautan menu di-klik
+        $('.header-area .main-nav .nav li a').on('click', function () {
+            if ($(window).width() < 992) {
+                $('.menu-trigger').removeClass('active');
+                $('.header-area .main-nav .nav').removeClass('mobile-active');
+            }
+        });
     });
   </script>
 

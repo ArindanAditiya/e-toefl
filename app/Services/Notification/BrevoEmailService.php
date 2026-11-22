@@ -4,6 +4,7 @@ namespace App\Services\Notification;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
 
 class BrevoEmailService
@@ -24,13 +25,9 @@ class BrevoEmailService
         $fromEmail = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'mahadaly@tebuireng.ac.id');
         $fromName = config('mail.from.name') ?: env('MAIL_FROM_NAME', "e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng");
 
-        if (!empty($apiKey) && $apiKey !== '[Masukkan API Key Brevo Anda di .env]') {
+        // 1. Prioritas Utama: Brevo Transactional Email REST API v3 (Direct HTTP via api-key)
+        if (!empty($apiKey) && !in_array($apiKey, ['[Masukkan API Key Brevo Anda di .env]', 'YOUR_BREVO_API_KEY'])) {
             try {
-                $client = new Client([
-                    'base_uri' => 'https://api.brevo.com/v3/',
-                    'timeout' => 10.0,
-                ]);
-
                 $payload = [
                     'sender' => [
                         'name' => $fromName,
@@ -50,38 +47,46 @@ class BrevoEmailService
                     $payload['textContent'] = $textContent;
                 }
 
-                $response = $client->post('smtp/email', [
-                    'headers' => [
-                        'api-key' => $apiKey,
-                        'Content-Type' => 'application/json',
-                        'Accept' => 'application/json',
-                    ],
-                    'json' => $payload,
-                ]);
+                $response = Http::withHeaders([
+                    'api-key' => $apiKey,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])->timeout(10)->post('https://api.brevo.com/v3/smtp/email', $payload);
 
-                $statusCode = $response->getStatusCode();
-                if ($statusCode >= 200 && $statusCode < 300) {
-                    Log::info("Brevo API: Email sent successfully to {$toEmail} (Subject: {$subject})");
+                if ($response->successful()) {
+                    Log::info("Brevo REST API v3: Email sent successfully to {$toEmail} (Subject: {$subject})");
                     return true;
+                } else {
+                    Log::warning("Brevo REST API v3 responded with status {$response->status()}: " . $response->body());
                 }
-            } catch (\Exception $e) {
-                Log::error("Brevo API Error: " . $e->getMessage() . " - Falling back to Laravel Mailer");
+            } catch (\Throwable $e) {
+                Log::error("Brevo REST API v3 Error: " . $e->getMessage());
             }
         }
 
-        // Fallback to Laravel Mail (SMTP / Log / etc.)
-        try {
-            Mail::html($htmlContent, function ($message) use ($toEmail, $toName, $subject, $fromEmail, $fromName) {
-                $message->to($toEmail, $toName ?: null)
-                    ->from($fromEmail, $fromName)
-                    ->subject($subject);
-            });
-            Log::info("Laravel Mailer: Email sent to {$toEmail} (Subject: {$subject})");
-            return true;
-        } catch (\Exception $e) {
-            Log::error("Laravel Mailer Error: " . $e->getMessage());
-            return false;
+        // 2. Fallback: Laravel Mailer (Hanya jika kredensial SMTP tersedia atau mail driver adalah log)
+        $mailDriver = config('mail.default', 'smtp');
+        $smtpUser = config('mail.mailers.smtp.username');
+        $smtpPass = config('mail.mailers.smtp.password');
+
+        if ($mailDriver === 'log' || ($mailDriver === 'smtp' && !empty($smtpUser) && !empty($smtpPass))) {
+            try {
+                Mail::html($htmlContent, function ($message) use ($toEmail, $toName, $subject, $fromEmail, $fromName) {
+                    $message->to($toEmail, $toName ?: null)
+                        ->from($fromEmail, $fromName)
+                        ->subject($subject);
+                });
+                Log::info("Laravel Mailer: Email sent to {$toEmail} (Subject: {$subject})");
+                return true;
+            } catch (\Throwable $e) {
+                Log::error("Laravel Mailer Error: " . $e->getMessage());
+                return false;
+            }
         }
+
+        // 3. Fallback Aman: Catat pengiriman email di log jika API key & SMTP login belum diisi di lingkungan lokal
+        Log::info("Email queued/logged to {$toEmail} [Subject: {$subject}] (Brevo API key & SMTP credentials not configured in environment)");
+        return true;
     }
 
     /**

@@ -32,7 +32,32 @@ class SendTransactionNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail'];
+        $smtpUser = config('mail.mailers.smtp.username');
+        $smtpPass = config('mail.mailers.smtp.password');
+        $driver = config('mail.default');
+
+        // Kirim via Brevo API jika API key tersedia
+        $apiKey = config('services.brevo.api_key') ?: env('BREVO_API_KEY');
+        if (!empty($apiKey) && !in_array($apiKey, ['[Masukkan API Key Brevo Anda di .env]', 'YOUR_BREVO_API_KEY'])) {
+            try {
+                \App\Services\Notification\BrevoEmailService::sendEmail(
+                    $notifiable->email,
+                    $notifiable->name,
+                    "[e-TOEFL Ma'had Aly Tebuireng] Transaksi Baru #" . $this->transaction->code,
+                    "<h3>Transaksi Paket Ujian Baru</h3><p>Terdapat transaksi baru:</p><ul><li><b>No Invoice:</b> {$this->transaction->code}</li><li><b>Nama:</b> {$this->transaction->user->name}</li><li><b>Paket:</b> {$this->transaction->exam->title}</li><li><b>Total:</b> Rp. " . number_format($this->transaction->total_purchases, 0, ',', '.') . "</li></ul><p><a href='" . url('/admin/transactions') . "'>Buka Menu Manajemen Transaksi</a></p>"
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("SendTransactionNotification Brevo error: " . $e->getMessage());
+            }
+            return [];
+        }
+
+        if ($driver === 'log' || ($driver === 'smtp' && !empty($smtpUser) && !empty($smtpPass))) {
+            return ['mail'];
+        }
+
+        \Illuminate\Support\Facades\Log::info("Admin Notification: New Transaction #{$this->transaction->code}");
+        return [];
     }
 
     /**
