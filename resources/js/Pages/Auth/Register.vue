@@ -168,6 +168,7 @@
         },
         data() {
             return {
+                provinces: [],
                 cities: []
             }
         },
@@ -180,7 +181,7 @@
         },
         mounted() {
             // get all provinces data
-            axios.get('region/province').then(response => {
+            axios.get('/region/province').then(response => {
                 this.provinces = response.data;
             }).catch(error => console.error(error));
         },
