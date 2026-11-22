@@ -512,10 +512,12 @@
     }
 
     .step-badge {
-      display: inline-block;
-      width: 36px;
-      height: 36px;
-      line-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background-color: var(--mahad-soft);
       color: var(--mahad-primary);
@@ -523,6 +525,56 @@
       font-size: 15px;
       margin-bottom: 14px;
       border: 2px solid #C2E2CC;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .step-badge i {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+      font-size: 18px;
+    }
+
+    .step-badge.badge-whatsapp {
+      background-color: #25D366;
+      color: #FFFFFF;
+      border-color: #1EBE5D;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+    }
+
+    .floating-wa-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background-color: #25D366;
+      color: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+      font-size: 28px;
+      box-shadow: 0 4px 16px rgba(37, 211, 102, 0.45);
+      z-index: 99990;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .floating-wa-btn:hover {
+      background-color: #1EBE5D;
+      color: #FFFFFF;
+      transform: translateY(-3px) scale(1.08);
+      box-shadow: 0 8px 22px rgba(37, 211, 102, 0.55);
+    }
+
+    .floating-wa-btn i {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
     }
 
     .step-card h4 {
@@ -1387,15 +1439,15 @@
         <div class="col-lg-4 col-md-6">
           <div class="step-card text-start">
             <div class="d-flex align-items-center mb-3">
-              <div class="step-badge m-0 me-3"><i class="fa fa-whatsapp"></i></div>
+              <div class="step-badge badge-whatsapp m-0 me-3"><i class="fa fa-whatsapp"></i></div>
               <div>
                 <h5 class="mb-0">WhatsApp Resmi</h5>
                 <span class="text-muted small">Layanan Helpdesk</span>
               </div>
             </div>
             <p class="mb-3">Hubungi admin resmi Pusat Bahasa untuk konfirmasi akun atau kendala teknis.</p>
-            <a href="{{ $adminWaLink }}" target="_blank" rel="noopener" class="btn btn-outline-success w-100 btn-sm py-2" style="border-color: #007A1E; color: #007A1E; font-weight: 700;">
-              Chat {{ $adminWa }}
+            <a href="{{ $adminWaLink }}" target="_blank" rel="noopener" class="btn btn-outline-success w-100 btn-sm py-2 d-inline-flex align-items-center justify-content-center gap-2" style="border-color: #007A1E; color: #007A1E; font-weight: 700;">
+              <i class="fa fa-whatsapp" style="font-size: 16px; line-height: 0;"></i> Chat {{ $adminWa }}
             </a>
           </div>
         </div>
@@ -1571,6 +1623,11 @@
       modal.show();
     }
   </script>
+
+  <!-- Floating WhatsApp Action Button (Flexbox Centered) -->
+  <a href="{{ $adminWaLink }}" target="_blank" rel="noopener" class="floating-wa-btn" aria-label="Bantuan WhatsApp Resmi">
+    <i class="fa fa-whatsapp"></i>
+  </a>
 
 </body>
 </html>

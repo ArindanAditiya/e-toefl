@@ -58,6 +58,9 @@ class HandleInertiaRequests extends Middleware
                 'admin_address' => config('services.admin.address'),
             ],
             'student' => Auth::user() && !empty(Auth::user()->student) ? Auth::user()->student : null,
+            'turnstile' => [
+                'site_key' => config('services.turnstile.site_key'),
+            ],
         ]);
 }
 }

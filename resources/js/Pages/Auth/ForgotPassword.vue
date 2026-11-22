@@ -32,8 +32,17 @@
                                                 {{ errors.email || errors.phone_number }}
                                             </div>
                                         </div>
+
+                                        <!-- Cloudflare Turnstile Widget -->
+                                        <div class="mb-3 d-flex flex-column align-items-center">
+                                            <div class="cf-turnstile" :data-sitekey="$page.props.turnstile?.site_key || '1x00000000000000000000AA'" data-theme="light"></div>
+                                            <div v-if="errors.turnstile" class="text-danger small mt-1">
+                                                {{ errors.turnstile }}
+                                            </div>
+                                        </div>
+
                                         <div class="d-grid gap-2">
-                                            <button type="submit" class="btn btn-primary">Kirim Perubahan Password</button>
+                                            <button type="submit" class="btn btn-primary" style="background-color: #007A1E; border-color: #007A1E; font-weight: 700;">Kirim Perubahan Password</button>
                                         </div>
 
                                         <div class="text-center">
@@ -92,11 +101,16 @@
 
             // submit method
             const submit = () => {
+                const turnstileInput = document.querySelector('[name="cf-turnstile-response"]');
+                const turnstileToken = turnstileInput ? turnstileInput.value : '';
+
                 // send data to server
                 Inertia.post('/user/forgot-password', {
                     // data
                     email: form.email,
                     phone_number: form.email,
+                    'cf-turnstile-response': turnstileToken,
+                    turnstile_token: turnstileToken,
                 });
             }
 

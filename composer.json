@@ -14,6 +14,7 @@
         "laravel/fortify": "^1.17",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.2",
+        "laravel/socialite": "^5.30",
         "laravel/tinker": "^2.8",
         "ramsey/uuid": "^4.5",
         "spatie/laravel-analytics": "^4.1",
@@ -69,6 +70,11 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
+        },
+        "policy": {
+            "advisories": {
+                "block": false
+            }
         }
     },
     "minimum-stability": "stable",

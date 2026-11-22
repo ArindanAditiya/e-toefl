@@ -43,6 +43,11 @@ class ActivationController extends Controller
 
     public function storeForgotPassword(ForgotPasswordRequest $request)
     {
+        $turnstileToken = $request->input('cf-turnstile-response') ?? $request->input('turnstile_token');
+        if (!validateTurnstile($turnstileToken, $request->ip())) {
+            return redirect()->back()->with('error', 'Verifikasi keamanan Cloudflare Turnstile gagal. Silakan coba lagi.');
+        }
+
         $input = trim($request->input('email') ?: $request->input('phone_number'));
         $user = null;
 

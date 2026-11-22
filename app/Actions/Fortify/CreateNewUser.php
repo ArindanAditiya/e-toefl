@@ -23,6 +23,13 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input)
     {
+        $turnstileToken = $input['cf-turnstile-response'] ?? $input['turnstile_token'] ?? request()->input('cf-turnstile-response') ?? request()->input('turnstile_token');
+        if (!validateTurnstile($turnstileToken, request()->ip())) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'turnstile' => ['Verifikasi keamanan Cloudflare Turnstile gagal. Silakan coba lagi.']
+            ]);
+        }
+
         $niceNames = [
             'province_id' => 'Provinsi'
         ];

@@ -52,6 +52,23 @@ class FortifyServiceProvider extends ServiceProvider
             return Inertia::render('Auth/Login');
         });
 
+        Fortify::authenticateUsing(function (Request $request) {
+            $turnstileToken = $request->input('cf-turnstile-response') ?? $request->input('turnstile_token');
+            if (!validateTurnstile($turnstileToken, $request->ip())) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'turnstile' => ['Verifikasi keamanan Cloudflare Turnstile gagal. Silakan coba lagi.']
+                ]);
+            }
+
+            $user = \App\Models\User::where('email', $request->email)->first();
+
+            if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+                return $user;
+            }
+
+            return null;
+        });
+
         // register
         Fortify::registerView(function() {
             return Inertia::render('Auth/Register');

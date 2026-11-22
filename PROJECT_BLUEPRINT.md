@@ -313,4 +313,57 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
 5. **Pemadatan Spacing:**
    - Menghilangkan ruang kosong berlebih (white-space) dengan margin vertikal antar section yang proporsional (`50px - 60px` di desktop, `35px - 45px` di mobile).
 
+---
+
+## 10. SPRINT PERBAIKAN ROUTING, ALIGNMENT IKON, CLOUDFLARE TURNSTILE & GOOGLE OAUTH (TAHAP 5)
+
+### 10.1 Akar Masalah Error `BadMethodCallException: Method Route::status does not exist`
+- **Penyebab Teknis:**
+  Pada file `routes/web.php` baris 23-24, pemanggilan rute redirect dituliskan sebagai `Route::redirect('/id', '/')->status(301);`. Method `Route::redirect(...)` mengembalikan instance objek `Illuminate\Routing\Route`. Di dalam Laravel framework, class `Illuminate\Routing\Route` **tidak memiliki method `status()`**, melainkan menerima kode status HTTP sebagai parameter ketiga: `Route::redirect($source, $destination, $status = 302);`.
+- **Solusi yang Diterapkan:**
+  Mengganti baris pemanggilan rute menjadi method standar Laravel resmi:
+  ```php
+  Route::permanentRedirect('/id', '/');
+  Route::permanentRedirect('/id/index.php', '/');
+  ```
+  atau `Route::redirect('/id', '/', 301);` yang secara native mengembalikan redirect permanen HTTP 301 tanpa error `BadMethodCallException`.
+
+### 10.2 Presisi Tata Letak Logo & Ikon (CSS Flexbox Centering)
+- **Akar Masalah:**
+  Elemen wrapper ikon sebelumnya menggunakan `display: inline-block; line-height: 36px;` pada class `.step-badge`. Pada render browser dengan ukuran font tertentu, ikon FontAwesome (khususnya ikon WhatsApp `fa-whatsapp`) tampak melenceng beberapa piksel dari titik pusat lingkaran.
+- **Solusi:**
+  Mengubah seluruh wrapper ikon ke CSS Flexbox presisi:
+  ```css
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  ```
+  Serta menambahkan floating WhatsApp helpdesk button di pojok kanan bawah halaman dengan CSS centering presisi.
+
+### 10.3 Integrasi Cloudflare Turnstile (Anti-Bot & Anti-Spam)
+- **Tujuan:** Melindungi endpoint autentikasi publik (`/login`, `/register`, `/forgot-password`) dari serangan brute-force, credential stuffing, dan registrasi bot spam tanpa mempersulit pengguna.
+- **Frontend Widget:**
+  Menggunakan script resmi Cloudflare Turnstile `<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>` dengan atribut `data-theme="light"` dan `:data-sitekey="$page.props.turnstile.site_key"`.
+- **Backend Verification:**
+  - Endpoint verifikasi: `POST https://challenges.cloudflare.com/turnstile/v0/siteverify`
+  - Parameter: `secret`, `response` (`cf-turnstile-response`), dan `remoteip`.
+  - Helper validator `validateTurnstile($token, $ip)` dengan fallback aman saat mode lokal (local development) maupun saat kunci Turnstile di `.env` masih kosong agar akses pengerjaan/pengujian tidak terkunci.
+
+### 10.4 Integrasi Google OAuth (Laravel Socialite / 1-Click Login & Register)
+- **Tujuan:** Mempermudah mahasantri dan peserta umum mendaftar dan masuk hanya dengan 1 klik akun Google tanpa mengisi form pendaftaran yang panjang.
+- **Skema Database:**
+  - Tabel `users`: penambahan kolom `google_id` (varchar(191), nullable, unique), `avatar` (text/varchar(255), nullable), serta memastikan kolom `password` dapat bernilai nullable saat registrasi via OAuth.
+  - Tabel `students`: kolom pelengkap wilayah/alamat (`province_id`, `city_id`, `district_id`, `village_id`, `address`, `gender`) dibuat nullable agar proses registrasi instan dengan Google tidak terhambat oleh foreign key constraint MySQL.
+- **Alur & Endpoint:**
+  - `GET /auth/google`: Mengarahkan pengguna ke Google OAuth Consent Screen via `Socialite::driver('google')->redirect()`.
+  - `GET /auth/google/callback`: Menerima callback token dari Google, memeriksa apakah `google_id` atau `email` sudah terdaftar. Jika sudah, tautkan `google_id` dan login langsung; jika belum, buat record `User` & `Student` baru berstatus aktif (`is_active = 1`, `email_verified_at = now()`) lalu login otomatis.
+- **Variabel Konfigurasi (`.env`):**
+  - `TURNSTILE_SITE_KEY` & `TURNSTILE_SECRET_KEY`
+  - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+
+
 

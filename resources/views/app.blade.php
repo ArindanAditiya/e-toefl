@@ -30,6 +30,9 @@
 	<link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
 	<link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
 
+	<!-- Cloudflare Turnstile API -->
+	<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
     <style>
         .tox-notifications-container {
             display: none !important;

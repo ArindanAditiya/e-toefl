@@ -22,6 +22,11 @@ Route::get('on-progress', '\App\Http\Controllers\TestingController@onprogress');
 Route::get('/', '\App\Http\Controllers\LandingController@index')->name('home');
 Route::permanentRedirect('/id', '/');
 Route::permanentRedirect('/id/index.php', '/');
+Route::permanentRedirect('/forgot-password', '/user/forgot-password');
+
+// Google OAuth 2.0
+Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 Route::post('upload', '\App\Http\Controllers\Admin\DashboardController@upload')->name('upload');
 Route::post('upload/announcement', '\App\Http\Controllers\Admin\DashboardController@uploadAnnouncement')->name('upload');
