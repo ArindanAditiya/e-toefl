@@ -48,24 +48,12 @@ class ActivationController extends Controller
             return redirect()->back()->with('error', 'Verifikasi keamanan Cloudflare Turnstile gagal. Silakan coba lagi.');
         }
 
-        $input = trim($request->input('email') ?: $request->input('phone_number'));
-        $user = null;
-
-        if (filter_var($input, FILTER_VALIDATE_EMAIL)) {
-            $user = User::where('email', $input)->first();
-        } else {
-            $student = Student::where('phone_number', $input)->first();
-            if ($student) {
-                $user = User::find($student->user_id);
-            }
-            if (!$user) {
-                $user = User::where('email', $input)->first();
-            }
-        }
+        $email = trim($request->input('email'));
+        $user = User::where('email', $email)->first();
    
         if($user) {
             if($user->is_active == 0) {
-                return redirect()->back()->with('error', 'Untuk melakukan reset password, akun anda harus aktif terlebih dahulu, silakan hubungi admin untuk mendapatkan link aktivasi.');
+                return redirect()->back()->with('error', 'Untuk melakukan reset password, akun Anda harus aktif terlebih dahulu. Silakan hubungi admin untuk mendapatkan bantuan aktivasi.');
             }
             
             $namePassword = explode(" ", $user->name);
@@ -93,10 +81,10 @@ class ActivationController extends Controller
                 'password' => bcrypt($newPassword)
             ]);
             
-            return redirect()->route('login')->with('success', 'Kami telah mengirimkan informasi perubahan password ke email <b>'.$user->email.'</b>, silakan periksa kotak masuk Anda.');
+            return redirect()->route('login')->with('success', 'Kami telah mengirimkan kata sandi baru ke email <b>'.$user->email.'</b>, silakan periksa kotak masuk (atau folder spam) Anda.');
 
         } else {
-            return redirect()->back()->with('error', 'Akun dengan email / nomor kontak <b>'.htmlspecialchars($input). '</b> tidak ditemukan, silakan periksa kembali atau hubungi admin.');
+            return redirect()->back()->with('error', 'Akun dengan alamat email <b>'.htmlspecialchars($email). '</b> tidak terdaftar dalam sistem.');
         }
     }
 }

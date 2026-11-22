@@ -52,7 +52,7 @@
                                         </div>
                                         <div v-if="questionLists[indexPage]['audio_played'] < questionLists[indexPage]['audio_played_limit']" class="text-center" id="audioDiv">
                                             <button id="playButtonAudio" v-on:click="playAudio" class="btn btn-secondary btn-sm" style="display:none; position:absolute; z-index: 1;margin-top:10px;margin-left:15px; height:36px;width: 36px;border-radius: 50%;"><i class="bx bx-play"></i></button>
-                                            <audio id="myAudio" v-on:playing="removePause" controls v-bind:autoplay="true" controlsList="noremoteplayback nodownload" v-on:ended="endedAudio()" v-bind:src="'/storage/upload_files/questions/' + questionLists[indexPage]['audio']">
+                                            <audio id="myAudio" v-on:playing="removePause" controls v-bind:autoplay="true" controlsList="noremoteplayback nodownload" v-on:ended="endedAudio()" v-bind:src="getAudioUrl(questionLists[indexPage]['audio'])">
                                                 Your browser does not support the audio element.
                                             </audio>
                                         </div>
@@ -208,9 +208,12 @@
         Link
     } from '@inertiajs/inertia-vue3';
 
-    //import ref
+    //import ref, lifecycle hooks
     import {
-        ref
+        ref,
+        onMounted,
+        onBeforeUnmount,
+        nextTick
     } from 'vue';
 
     //import VueCountdown
@@ -266,6 +269,8 @@
 
             const counter = ref(0);
             const counterListening = ref(0);
+            const isNavigating = ref(false);
+            let blurTimer = null;
 
             const duration = ref(props.duration);
 
@@ -279,41 +284,65 @@
                 counterListening.value = counterListening.value + 1;
             });
 
+            const getAudioUrl = (audioFile) => {
+                if (!audioFile) return '';
+                return '/storage/upload_files/questions/' + encodeURI(audioFile);
+            };
+
+            const checkAudio = () => {
+                nextTick(() => {
+                    const audio = document.getElementById('myAudio');
+                    if (audio) {
+                        audio.load();
+                        audio.play().then(() => {
+                            $('#playButtonAudio').hide();
+                        }).catch(() => {
+                            $('#playButtonAudio').show();
+                        });
+                    }
+                });
+            };
+
             const prevPage = (() => {
                 indexPage.value = indexPage.value - 1;
+                checkAudio();
             });
 
             const nextPage = (() => {
                 indexPage.value = indexPage.value + 1;
+                checkAudio();
             });
 
             const clickQuestion = ((index) => {
                 indexPage.value = index;
+                checkAudio();
             });
 
             const confirm = (() => {
+                if (isNavigating.value) return;
                 if(props.grade.is_blocked != 1) {
                     let total_tolerance = parseInt(props.grade.total_tolerance) > 0 ? parseInt(props.grade.total_tolerance) - 1 : 0;
                     let tolerance = total_tolerance == 0 ? 'Tolerasi habis, ' : 'Toleransi Tersisa '+ total_tolerance +' kali lagi, ';
                     Swal.fire({
-                        title: 'UJIAN AKAN DI DIBLOKIR JIKA ANDA MENINGGALKAN SESI UJIAN',
-                        text: tolerance +" jika toleransi habis anda tidak dapat melanjutkan ujian dan harus menghubungi admin",
+                        title: 'UJIAN AKAN DIBLOKIR JIKA MENINGGALKAN SESI',
+                        text: tolerance +"jika toleransi habis Anda tidak dapat melanjutkan ujian dan harus menghubungi admin.",
                         icon: 'warning',
                         showCancelButton: false,
-                        confirmButtonColor: '#d33',
+                        confirmButtonColor: '#0A3D24',
                         cancelButtonColor: '#d33',
-                        confirmButtonText: 'Tutup',
+                        confirmButtonText: 'Kembali ke Ujian',
                         allowOutsideClick: false
                     })
                     .then((result) => {
                         if (result.isConfirmed) {
-
                             Inertia.post(`/user/exams/${props.exam.id}/decrement-tolerance`, {
                                 grade_id: props.grade.id,
                             },{
+                                preserveScroll: true,
+                                preserveState: true,
                                 onSuccess: () => {
-                                    if(props.grade.total_tolerance == 0) {
-                                        window.removeEventListener("blur", confirm);
+                                    if(props.grade.total_tolerance <= 0) {
+                                        cleanupListeners();
                                         endExam('block');
                                     }
                                 },
@@ -323,13 +352,59 @@
                 }
             });
 
+            const handleBlurOrVisibility = () => {
+                if (isNavigating.value) return;
+                if (Swal.isVisible()) return;
+
+                if (blurTimer) clearTimeout(blurTimer);
+                blurTimer = setTimeout(() => {
+                    if (isNavigating.value) return;
+                    if (document.hidden || !document.hasFocus()) {
+                        confirm();
+                    }
+                }, 1000);
+            };
+
+            const handleFocus = () => {
+                if (blurTimer) {
+                    clearTimeout(blurTimer);
+                    blurTimer = null;
+                }
+            };
+
+            const cleanupListeners = () => {
+                window.removeEventListener("blur", handleBlurOrVisibility);
+                window.removeEventListener("focus", handleFocus);
+                document.removeEventListener("visibilitychange", handleBlurOrVisibility);
+            };
+
+            onMounted(() => {
+                window.addEventListener("blur", handleBlurOrVisibility);
+                window.addEventListener("focus", handleFocus);
+                document.addEventListener("visibilitychange", handleBlurOrVisibility);
+                window.addEventListener("beforeunload", () => {
+                    isNavigating.value = true;
+                });
+                checkAudio();
+            });
+
+            onBeforeUnmount(() => {
+                cleanupListeners();
+            });
+
             const removePause = (() => {
                 $('#playButtonAudio').hide();
             })
 
             const playAudio = (() => {
                 var play = document.getElementById("myAudio"); 
-                play.play();
+                if (play) {
+                    play.play().then(() => {
+                        $('#playButtonAudio').hide();
+                    }).catch(() => {
+                        $('#playButtonAudio').show();
+                    });
+                }
             })
 
             const submitAnswer = ((question_id, answer) => {
@@ -380,6 +455,9 @@
 
             //method endExam
             const endExam = ((block = '') => {
+                isNavigating.value = true;
+                cleanupListeners();
+
                 //show success alert
                 if(props.section == props.lastSection || block == 'block') {
                     Inertia.post(`/user/exams/${props.exam.id}/exam-end`, {
@@ -431,8 +509,6 @@
                 }
 
             });
-
-            window.addEventListener("blur", confirm);
             
             return {
                 indexPage,
@@ -453,6 +529,7 @@
                 showModalEndTimeExam,
                 endExam,
                 fullscreen: false,
+                getAudioUrl,
             }
         },
         methods: {

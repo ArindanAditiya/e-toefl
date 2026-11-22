@@ -436,6 +436,43 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
 - **Pembaruan Sampel Gambar Landing Page:**
   - Menghasilkan file pratinjau sertifikat resmi resolusi tinggi untuk `public/id/assets/images/sertifikat-toefl.jpg`, `sertifikat-toeic.jpg`, dan alias `portfolio-01.jpg` yang mencerminkan identitas Ma'had Aly Tebuireng.
 
+---
+
+## 13. SPRINT FINAL POLISH: E-SERTIFIKAT 1-HALAMAN PRESISI, EMAIL-ONLY PASSWORD RESET, STABILISASI ANTI-CHEAT & PANDUAN BANK SOAL (TAHAP 8)
+
+### 13.1 Penyempurnaan Cetak e-Sertifikat 1 Halaman Penuh (Page 1 of 1)
+- **Akar Masalah Halaman Terpotong Jadi 2 (`Page 1 / 2`):**
+  Pada implementasi awal, CSS kontainer sertifikat menggunakan `width: 297mm; height: 210mm; padding: 12mm;` pada elemen `body`. Di dalam mesin render DomPDF, `box-sizing: border-box` pada elemen `body` seringkali tidak terhitung secara presisi sehingga total tinggi (`210mm + 24mm = 234mm`) melampaui batas kanvas A4 Landscape (595.28 pt / 210mm). Kelebihan tinggi ini memaksa DomPDF memecah halaman menjadi 2 (*page break*), di mana halaman 1 hanya memuat bingkai luar dan seluruh konten terdorong ke halaman 2.
+- **Solusi yang Diterapkan:**
+  1. Menetapkan ukuran kertas absolut `@page { size: 297mm 210mm; margin: 0; }`.
+  2. Mengunci elemen `html, body` pada `width: 297mm; height: 210mm; margin: 0; padding: 0; overflow: hidden;`.
+  3. Menggunakan kontainer bersarang dengan koordinat absolut yang terkalibrasi (`width: 283mm; height: 196mm; position: absolute; top: 7mm; left: 7mm;`), sehingga seluruh elemen teks, tabel nilai, watermark, dan tanda tangan pas 100% dalam batas kanvas satu halaman utuh (*Page 1 of 1*).
+  4. **Pembaruan Identitas Resmi:**
+     - Mengganti penandatangan menjadi identitas resmi: **Abdul Karim Amrulloh** selaku **Kepala Lembaga Bahasa Ma'had Aly Hasyim Asy'ari Tebuireng**.
+     - Memasang aset tanda tangan dan stempel resmi dari `public/assets/images/ttd.png` secara proporsional.
+     - Memperbesar logo Ma'had Aly pada kop header serta menambahkan ornamen sudut (*corner ornaments*) hijau tua (`#0A3D24`) dan emas (`#C5A059`), serta *watermark* lambang Ma'had Aly transparan lembut di tengah latar belakang sertifikat.
+
+### 13.2 Migrasi Reset Password Menjadi Full Email-Only
+- **Penyebab & Kebutuhan:**
+  Form lupa password sebelumnya masih memiliki dependensi ganda pada nomor WhatsApp (`required_without:phone_number`), yang membingungkan alur dan rawan gagal jika nomor WhatsApp belum tersinkronisasi.
+- **Solusi yang Diterapkan:**
+  1. Mengubah `ForgotPasswordRequest.php` menjadi strictly `'email' => 'required|email|exists:users,email'`.
+  2. Menyederhanakan `ActivationController::storeForgotPassword` agar 100% memproses berdasarkan alamat email terdaftar, meng-generate kata sandi acak baru, dan mengirimkannya via template email resmi Ma'had Aly.
+  3. Memperbarui tampilan `ForgotPassword.vue`: menghapus input nomor WhatsApp dan menyelaraskan panduan khusus email.
+
+### 13.3 Stabilisasi Anti-Cheat (Blokir Pindah Tab) & Penanganan Audio / Skor
+- **Akar Masalah False-Positive Blokir Tab:**
+  Event listener `window.addEventListener("blur", confirm)` sebelumnya terpasang secara mentah tanpa mendeteksi konteks. Akibatnya, saat peserta berpindah bagian (*section*), melakukan *refresh* yang sah, atau saat browser memunculkan dialog izin media (*audio autoplay permission*), event `blur` terpanggil dan mengurangi batas toleransi secara salah, bahkan langsung memblokir ujian dan membuat nilai akhir menjadi `0`.
+- **Solusi yang Diterapkan:**
+  1. Menambahkan flag `isNavigating` pada komponen `Question.vue`. Saat peserta berpindah halaman, berpindah seksi, atau mengakhiri ujian secara sah, event listener dinonaktifkan sementara.
+  2. Menggunakan kombinasi `document.visibilitychange` dan `window.blur` dengan debounce serta verifikasi `document.visibilityState === 'hidden'` agar hanya aktivitas keluar jendela yang sesungguhnya yang dihitung sebagai pelanggaran.
+  3. Menambahkan pembersihan event listener pada lifecycle `onBeforeUnmount` / `onUnmounted`.
+  4. Memperbaiki tombol putar audio manual (`playButtonAudio`) jika kebijakan *autoplay* browser memblokir audio otomatis, serta memastikan nama file audio di-encode secara aman (`encodeURI`).
+  5. Memperbaiki fitur admin `unblocked` pada `ExamController.php` agar mengembalikan toleransi peserta dan membuka blokir (`is_blocked = 0`) tanpa menghapus riwayat pengerjaan.
+
+### 13.4 Panduan Sistem dan Bank Soal (`PANDUAN_SISTEM_DAN_BANK_SOAL.md`)
+- Menyusun panduan komprehensif untuk pengelola/admin mencakup tutorial input soal & audio listening bebas error, panduan alur pendaftaran, sistem paket soal, anti-cheat & pembukaan blokir peserta, serta penerbitan e-sertifikat ber-QR Code.
+
 
 
 

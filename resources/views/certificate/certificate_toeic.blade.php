@@ -5,7 +5,7 @@
     <title>Sertifikat {{ $grade->category->name ?? 'TOEIC' }} - {{ $grade->user->name ?? 'Peserta' }}</title>
     <style>
         @page {
-            size: A4 landscape;
+            size: 297mm 210mm;
             margin: 0;
         }
         * {
@@ -13,62 +13,81 @@
             margin: 0;
             padding: 0;
         }
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background-color: #fbfbfa;
-            color: #1a251e;
+        html, body {
             width: 297mm;
             height: 210mm;
-            padding: 12mm;
-            position: relative;
+            max-width: 297mm;
+            max-height: 210mm;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #1a251e;
         }
-        .cert-outer-border {
-            width: 100%;
-            height: 100%;
-            border: 4px solid #0A3D24;
-            padding: 5px;
-            position: relative;
+        .cert-container {
+            position: absolute;
+            top: 7mm;
+            left: 7mm;
+            width: 283mm;
+            height: 196mm;
+            border: 3.5px solid #0A3D24;
             background: #ffffff;
         }
-        .cert-inner-border {
-            width: 100%;
-            height: 100%;
+        .cert-inner {
+            position: absolute;
+            top: 3mm;
+            left: 3mm;
+            width: 275mm;
+            height: 188mm;
             border: 1.5px solid #C5A059;
-            padding: 18px 30px;
-            position: relative;
+            padding: 10px 24px;
         }
         .corner-ornament {
             position: absolute;
-            width: 32px;
-            height: 32px;
-            border-color: #C5A059;
+            width: 26px;
+            height: 26px;
         }
-        .corner-tl { top: 6px; left: 6px; border-top: 3px solid #0A3D24; border-left: 3px solid #0A3D24; }
-        .corner-tr { top: 6px; right: 6px; border-top: 3px solid #0A3D24; border-right: 3px solid #0A3D24; }
-        .corner-bl { bottom: 6px; left: 6px; border-bottom: 3px solid #0A3D24; border-left: 3px solid #0A3D24; }
-        .corner-br { bottom: 6px; right: 6px; border-bottom: 3px solid #0A3D24; border-right: 3px solid #0A3D24; }
+        .corner-tl { top: 4px; left: 4px; border-top: 2.5px solid #0A3D24; border-left: 2.5px solid #0A3D24; }
+        .corner-tr { top: 4px; right: 4px; border-top: 2.5px solid #0A3D24; border-right: 2.5px solid #0A3D24; }
+        .corner-bl { bottom: 4px; left: 4px; border-bottom: 2.5px solid #0A3D24; border-left: 2.5px solid #0A3D24; }
+        .corner-br { bottom: 4px; right: 4px; border-bottom: 2.5px solid #0A3D24; border-right: 2.5px solid #0A3D24; }
 
-        /* Institutional Header */
+        /* Soft Watermark in center */
+        .watermark {
+            position: absolute;
+            top: 36%;
+            left: 50%;
+            margin-left: -120px;
+            margin-top: -50px;
+            width: 240px;
+            opacity: 0.07;
+            z-index: 0;
+            text-align: center;
+        }
+
+        /* Header */
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
         }
         .header-logo {
-            width: 72px;
+            width: 88px;
             text-align: center;
             vertical-align: middle;
         }
         .header-logo img {
-            max-width: 68px;
-            max-height: 68px;
+            max-width: 82px;
+            max-height: 76px;
         }
         .header-text {
             text-align: center;
             vertical-align: middle;
-            padding-right: 72px;
+            padding-right: 88px;
         }
-        .inst-title {
+        .inst-kop {
             font-size: 19px;
             font-weight: 800;
             color: #0A3D24;
@@ -76,83 +95,89 @@
             text-transform: uppercase;
         }
         .inst-sub {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 13.5px;
+            font-weight: 700;
             color: #C5A059;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
             margin-top: 2px;
         }
         .inst-address {
-            font-size: 9.5px;
-            color: #556b5d;
-            margin-top: 4px;
+            font-size: 9px;
+            color: #4a5d51;
+            margin-top: 3px;
         }
         .header-divider {
             height: 2px;
-            background: linear-gradient(to right, transparent, #0A3D24, #C5A059, #0A3D24, transparent);
+            background: #0A3D24;
             border: none;
-            margin: 8px 0 14px 0;
+            margin: 6px 0 10px 0;
         }
 
-        /* Certificate Title */
+        /* Title */
         .cert-title-wrap {
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
         }
         .cert-main-title {
-            font-size: 24px;
+            font-size: 23px;
             font-weight: 800;
             color: #0A3D24;
             letter-spacing: 3px;
             text-transform: uppercase;
         }
         .cert-no {
-            font-size: 10.5px;
-            color: #77837b;
+            font-size: 10px;
+            color: #64746b;
             font-weight: 600;
             letter-spacing: 1px;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
-        /* Certificate Body */
+        /* Body */
         .cert-body {
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
         }
         .cert-lead {
-            font-size: 12px;
+            font-size: 11.5px;
             color: #4a5568;
             font-style: italic;
         }
         .recipient-name {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             color: #0A3D24;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin: 6px 0;
+            margin: 4px 0 3px 0;
             border-bottom: 1.5px solid #C5A059;
             display: inline-block;
-            padding: 0 35px 4px 35px;
+            padding: 0 30px 3px 30px;
         }
         .cert-statement {
-            font-size: 12px;
+            font-size: 11.5px;
             color: #4a5568;
-            margin-top: 4px;
+            margin-top: 3px;
         }
         .exam-title {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 700;
             color: #1a251e;
             font-style: italic;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         /* Score Table */
         .score-wrap {
-            width: 82%;
-            margin: 10px auto 12px auto;
+            width: 84%;
+            margin: 8px auto 8px auto;
+            position: relative;
+            z-index: 2;
         }
         .score-table {
             width: 100%;
@@ -162,19 +187,19 @@
         .score-table th {
             background-color: #0A3D24;
             color: #ffffff;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border: 1px solid #0A3D24;
             letter-spacing: 0.5px;
         }
         .score-table td {
-            background-color: #fcfcfb;
-            font-size: 12px;
+            background-color: #fdfdfc;
+            font-size: 11.5px;
             font-weight: 600;
             color: #1a251e;
-            padding: 6px 10px;
-            border: 1px solid #dcdedc;
+            padding: 5px 8px;
+            border: 1px solid #d4ded7;
         }
         .score-total-th {
             background-color: #C5A059 !important;
@@ -183,66 +208,76 @@
         .score-total-td {
             background-color: #f7f3e8 !important;
             color: #0A3D24 !important;
-            font-size: 14px !important;
+            font-size: 13px !important;
             font-weight: 800 !important;
         }
 
-        /* Footer & Signatures */
+        /* Footer */
         .footer-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 6px;
+            position: relative;
+            z-index: 2;
         }
         .footer-left {
             width: 45%;
             vertical-align: bottom;
             text-align: left;
-            padding-left: 10px;
+            padding-left: 6px;
         }
         .qr-card {
             display: inline-block;
             border: 1px solid #C5A059;
-            background: #fdfbf7;
-            padding: 6px 10px;
+            background: #fbf9f4;
+            padding: 5px 8px;
             border-radius: 4px;
         }
         .qr-card-title {
-            font-size: 9px;
+            font-size: 8.5px;
             font-weight: 800;
             color: #0A3D24;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .qr-card-text {
-            font-size: 8.5px;
-            color: #556b5d;
+            font-size: 8px;
+            color: #4a5d51;
             margin-top: 2px;
-            line-height: 1.3;
-        }
-        .qr-card-url {
-            color: #0A3D24;
-            font-weight: 700;
-            text-decoration: none;
+            line-height: 1.25;
         }
         .footer-right {
-            width: 45%;
+            width: 48%;
             vertical-align: bottom;
             text-align: center;
-            padding-right: 10px;
+            padding-right: 6px;
         }
         .sig-city-date {
-            font-size: 10.5px;
+            font-size: 10px;
             color: #4a5568;
             margin-bottom: 2px;
         }
-        .sig-role {
-            font-size: 11px;
-            font-weight: 700;
+        .sig-inst {
+            font-size: 10px;
+            font-weight: 600;
             color: #0A3D24;
             text-transform: uppercase;
         }
-        .sig-space {
-            height: 40px;
+        .sig-role {
+            font-size: 11px;
+            font-weight: 800;
+            color: #0A3D24;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sig-image-wrap {
+            height: 48px;
+            margin: 2px auto;
+            position: relative;
+        }
+        .sig-image {
+            max-height: 48px;
+            max-width: 130px;
         }
         .sig-name {
             font-size: 12px;
@@ -250,32 +285,37 @@
             color: #1a251e;
             text-decoration: underline;
         }
-        .sig-sub {
-            font-size: 9.5px;
-            color: #556b5d;
-        }
     </style>
 </head>
 <body>
-    <div class="cert-outer-border">
+    <div class="cert-container">
         <div class="corner-ornament corner-tl"></div>
         <div class="corner-ornament corner-tr"></div>
         <div class="corner-ornament corner-bl"></div>
         <div class="corner-ornament corner-br"></div>
 
-        <div class="cert-inner-border">
+        <div class="cert-inner">
+            <!-- Center Soft Watermark -->
+            @if(file_exists(public_path('assets/images/logo-icon.png')))
+                <div class="watermark">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/logo-icon.png'))) }}" style="width: 200px; height: auto;" alt="Watermark">
+                </div>
+            @endif
+
             <!-- Header Table -->
             <table class="header-table">
                 <tr>
                     <td class="header-logo">
-                        @if(file_exists(public_path('id/assets/images/logo.png')))
+                        @if(file_exists(public_path('assets/images/logo-icon.png')))
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/logo-icon.png'))) }}" alt="Logo Ma'had Aly">
+                        @elseif(file_exists(public_path('id/assets/images/logo.png')))
                             <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('id/assets/images/logo.png'))) }}" alt="Logo Ma'had Aly">
                         @endif
                     </td>
                     <td class="header-text">
-                        <div class="inst-title">Pusat Bahasa Ma'had Aly Hasyim Asy'ari</div>
-                        <div class="inst-sub">Pondok Pesantren Tebuireng Jombang</div>
-                        <div class="inst-address">Jl. Irian Jaya No. 10, Tebuireng, Cukir, Diwek, Jombang, Jawa Timur 61471 &bull; https://etoefl.mahatbi.or.id</div>
+                        <div class="inst-kop">MA'HAD ALY HASYIM ASY'ARI</div>
+                        <div class="inst-sub">LEMBAGA BAHASA &bull; PONDOK PESANTREN TEBUIRENG JOMBANG</div>
+                        <div class="inst-address">Jl. Irian Jaya No. 10, Tebuireng, Cukir, Diwek, Jombang, Jawa Timur 61471 &bull; Portal: https://etoefl.mahatbi.or.id</div>
                     </td>
                 </tr>
             </table>
@@ -333,9 +373,9 @@
                 <tr>
                     <td class="footer-left">
                         <div class="qr-card">
-                            <div class="qr-card-title">&check; Official Online Verification</div>
+                            <div class="qr-card-title">&check; Official Digital Verification</div>
                             <div class="qr-card-text">
-                                Verified via: <span class="qr-card-url">https://etoefl.mahatbi.or.id</span><br>
+                                Verified Portal: <strong>https://etoefl.mahatbi.or.id</strong><br>
                                 Issued Date: <strong>{{ date('d F Y', strtotime($grade->end_time ?? now())) }}</strong><br>
                                 Valid Until: <strong>{{ date('d F Y', strtotime(($grade->end_time ?? now()) . ' + 2 years')) }}</strong>
                             </div>
@@ -343,10 +383,14 @@
                     </td>
                     <td class="footer-right">
                         <div class="sig-city-date">Jombang, {{ date('d F Y', strtotime($grade->end_time ?? now())) }}</div>
-                        <div class="sig-role">Pusat Bahasa Ma'had Aly Hasyim Asy'ari</div>
-                        <div class="sig-space"></div>
-                        <div class="sig-name">M. Farih Ridlo, M.Pd.</div>
-                        <div class="sig-sub">Kepala Pusat Bahasa</div>
+                        <div class="sig-inst">Ma'had Aly Hasyim Asy'ari</div>
+                        <div class="sig-role">Kepala Lembaga Bahasa</div>
+                        <div class="sig-image-wrap">
+                            @if(file_exists(public_path('assets/images/ttd.png')))
+                                <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/images/ttd.png'))) }}" class="sig-image" alt="TTD & Stempel">
+                            @endif
+                        </div>
+                        <div class="sig-name">Abdul Karim Amrulloh</div>
                     </td>
                 </tr>
             </table>

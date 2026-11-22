@@ -15,7 +15,7 @@
                                     <div class="p-5">
                                         <h3 class="">Reset Password</h3>
                                         <p>Sudah memiliki akun ? <Link href="/login">Login disini</Link></p>
-                                        <p class="text-muted">Masukkan alamat email aktif yang terdaftar pada akun Anda (atau nomor WhatsApp jika sebelumnya didaftarkan).</p>
+                                        <p class="text-muted">Masukkan alamat email aktif yang terdaftar pada akun e-TOEFL Anda untuk menerima kata sandi baru.</p>
                                         <div class="mb-3 mt-0">
                                             <div v-if="$page.props.session.error" class="alert alert-danger border-0">
                                                 <i class="fa fa-exclamation-triangle"></i>  <div v-html="$page.props.session.error"></div>
@@ -26,10 +26,10 @@
                                             </div>
                                         </div>
                                         <div class="mb-3 mt-0">
-                                            <label class="form-label">Email Terdaftar (atau Nomor WhatsApp)</label>
-                                            <input type="text" v-model="form.email" :class="{ 'is-invalid': errors.email || errors.phone_number }" class="form-control" placeholder="Contoh: santri@mahatbi.or.id">
-                                            <div v-if="errors.email || errors.phone_number" class="invalid-feedback">
-                                                {{ errors.email || errors.phone_number }}
+                                            <label class="form-label">Alamat Email Terdaftar</label>
+                                            <input type="email" v-model="form.email" :class="{ 'is-invalid': errors.email }" class="form-control" placeholder="Contoh: santri@mahatbi.or.id" required>
+                                            <div v-if="errors.email" class="invalid-feedback">
+                                                {{ errors.email }}
                                             </div>
                                         </div>
 
@@ -42,13 +42,13 @@
                                         </div>
 
                                         <div class="d-grid gap-2">
-                                            <button type="submit" class="btn btn-primary" style="background-color: #007A1E; border-color: #007A1E; font-weight: 700;">Kirim Perubahan Password</button>
+                                            <button type="submit" class="btn btn-primary" style="background-color: #007A1E; border-color: #007A1E; font-weight: 700;">Kirim Kata Sandi Baru</button>
                                         </div>
 
                                         <div class="text-center">
                                             <br>
                                             <p class="text-muted">
-                                                Kendala akses akun? <a :href="`${formatWaLink(wa)}?text=${encodeURI('Hallo, Admin e-TOEFL Ma\'had Aly Tebuireng, saya ingin bantuan pemulihan akses akun saya:\n\nNama:\nEmail:\n\nTerima kasih.')}`" target="_blank">Hubungi Admin di WhatsApp</a>
+                                                Kendala akses akun? <a :href="`${formatWaLink(dynamicWa)}?text=${encodeURI('Hallo, Admin e-TOEFL Ma\'had Aly Tebuireng, saya ingin bantuan pemulihan akses akun saya:\n\nNama:\nEmail:\n\nTerima kasih.')}`" target="_blank">Hubungi Admin di WhatsApp</a>
                                             </p>
                                         </div>
                                     </div>
@@ -108,7 +108,6 @@
                 Inertia.post('/user/forgot-password', {
                     // data
                     email: form.email,
-                    phone_number: form.email,
                     'cf-turnstile-response': turnstileToken,
                     turnstile_token: turnstileToken,
                 });
