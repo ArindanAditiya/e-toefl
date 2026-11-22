@@ -19,9 +19,9 @@ Route::get('json-testing', '\App\Http\Controllers\TestingController@jsonRelation
 Route::get('local-storage', '\App\Http\Controllers\TestingController@localStorage');
 Route::get('on-progress', '\App\Http\Controllers\TestingController@onprogress');
 
-Route::get('/', function () {
-    return redirect('/id/index.php');
-})->name('home');
+Route::get('/', '\App\Http\Controllers\LandingController@index')->name('home');
+Route::permanentRedirect('/id', '/');
+Route::permanentRedirect('/id/index.php', '/');
 
 Route::post('upload', '\App\Http\Controllers\Admin\DashboardController@upload')->name('upload');
 Route::post('upload/announcement', '\App\Http\Controllers\Admin\DashboardController@uploadAnnouncement')->name('upload');

@@ -1,4 +1,9 @@
 <?php
+// 301 Permanent Redirect ke Clean Root URL
+header("HTTP/1.1 301 Moved Permanently");
+header("Location: /");
+exit();
+
 $candidatePaths = [
     __DIR__ . '/../../.env',          // Struktur lokal standard (toefl/public/id/index.php)
     __DIR__ . '/../../toefl/.env',     // Struktur Hostinger (public_html/id/index.php -> toefl/.env)

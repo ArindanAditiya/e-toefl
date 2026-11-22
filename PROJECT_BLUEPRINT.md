@@ -268,4 +268,49 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
      b. Menambahkan pengecekan kredensial sebelum fallback ke SMTP Laravel. Jika kredensial SMTP kosong di lingkungan lokal, sistem beralih aman ke logging (`Log::warning`/`Log::info`) tanpa melempar exception fatal ke pengguna.
      c. Mengubah `SendNewUserNotification` dan `SendTransactionNotification` agar memanggil email service resmi dan membungkus `$admin->notify()` dalam blok `try-catch (\Throwable $e)` sehingga proses registrasi peserta selalu sukses dan akun berhasil dibuat.
 
+---
+
+## 9. SPRINT PENYEMPURNAAN LANDING PAGE & CLEAN URL (TAHAP 4)
+
+### 9.1 Arsitektur Clean URL (Root `/` Tanpa `/id/index.php`)
+- **Tujuan:** Pengunjung yang membuka `http://toefl.test/` maupun `https://etoefl.mahatbi.or.id/` disajikan landing page utama secara langsung pada URL bersih (`/`), tanpa ada redirect atau akhiran `/id/index.php` pada address bar.
+- **Rencana Rute & Controller:**
+  - Membuat controller `App\Http\Controllers\LandingController` yang menangani rute utama `Route::get('/', [LandingController::class, 'index'])->name('home');`.
+  - Membuat view Blade `resources/views/landing.blade.php` sebagai single source of truth untuk tampilan beranda institusi.
+  - Mempertahankan backward compatibility untuk tautan lama `/id/index.php` dengan redirect permanen (`301 Moved Permanently`) ke root `/`.
+  - Seluruh aset statis CSS, JS, dan gambar menggunakan path absolut `/id/assets/...` atau fungsi pembantu `asset()` sehingga tidak bergantung pada tag `<base href="/id/">` yang merusak navigasi anchor link (`#`).
+
+### 9.2 Arsitektur Header Navbar Fleksibel (Desktop & Mobile)
+- **Struktur Baris Desktop (`>= 992px`):**
+  - Layout 3 Kolom sejajar horizontal:
+    - **Kiri:** Logo e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng (`max-height: 48px`, proporsional).
+    - **Tengah:** Menu navigasi (`Beranda`, `Alur Ujian`, `Simulasi Mini`, `Paket Ujian`, `Kalkulator Skor`, `Sertifikat`, `FAQ`, `Kontak`).
+    - **Kanan:** Tombol aksi peserta (`Masuk Peserta` & `Daftar`) sejajar rapi vertikal-tengah (`align-items: center`).
+- **Struktur Baris Mobile (`< 992px` / iPhone 13 Pro):**
+  - Ketinggian navbar dikunci presisi `64px`, `position: fixed; top: 0; left: 0; right: 0; z-index: 99999;`.
+  - Hanya ada dua elemen sejajar di baris utama:
+    - **Kiri:** Logo Ma'had Aly (`height: 36px`).
+    - **Kanan:** Tombol Hamburger Menu (`☰`, 40x40px).
+  - Saat tombol hamburger diklik, menu muncul sebagai slide-down drawer di bawah header (tinggi `calc(100vh - 64px)`, scrollable, backdrop halus) tanpa merusak atau mendorong baris header ke bawah.
+  - Padding atas hero banner pada mobile disesuaikan (`padding-top: 88px`) agar judul hero tidak terpotong.
+
+### 9.3 Fitur Interaktif Edukatif & Pemadatan Spacing (Anti-AI Slop)
+1. **Interactive Mini Sample Test Widget:**
+   - 3 contoh soal standar TOEFL ITP (*Structure*, *Written Expression*, *Reading*) dengan opsi interaktif A/B/C/D.
+   - Evaluasi instan: kartu jawaban benar berwarna hijau `#007A1E` dan kartu jawaban salah berwarna merah halus, disertai penjelasan kunci jawaban dan pembahasan kaidah tata bahasa Inggris.
+2. **Kalkulator & Matriks Konversi Skor TOEFL ITP:**
+   - Slider simulasi interaktif untuk 3 seksi ujian:
+     - Section 1: Listening Comprehension (skor terkonversi 31 - 68)
+     - Section 2: Structure & Written Expression (skor terkonversi 31 - 68)
+     - Section 3: Reading Comprehension (skor terkonversi 31 - 67)
+   - Tampilan live perhitungan skor total `((L + S + R) * 10) / 3` beserta indikator predikat standar kelulusan akademik Ma'had Aly Tebuireng.
+3. **FAQ Accordion Interaktif:**
+   - 5 pertanyaan seputar teknis ujian, perangkat ujian (laptop/smartphone), jadwal sesi, masa berlaku sertifikat, dan legalitas QR-code verifikasi.
+   - Buka-tutup halus dengan interaksi ramah sentuhan.
+4. **Tab Switcher Detail Paket & Lightbox Modal Sertifikat:**
+   - Tab switcher antara paket *TOEFL Prediction* dan *TOEIC Prediction*.
+   - Preview sertifikat ber-barcode yang dapat diklik untuk diperbesar dalam modal resolusi tinggi.
+5. **Pemadatan Spacing:**
+   - Menghilangkan ruang kosong berlebih (white-space) dengan margin vertikal antar section yang proporsional (`50px - 60px` di desktop, `35px - 45px` di mobile).
+
 
