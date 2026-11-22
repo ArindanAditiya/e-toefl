@@ -41,7 +41,10 @@ return [
     ],
 
     'brevo' => [
+        'active' => env('BREVO_ACTIVE', false),
         'api_key' => env('BREVO_API_KEY'),
+        'sender_email' => env('BREVO_SENDER_EMAIL', 'admin@etoefl.mahatbi.or.id'),
+        'sender_name' => env('BREVO_SENDER_NAME', "e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"),
     ],
 
     'admin' => [

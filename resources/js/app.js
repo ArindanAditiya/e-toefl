@@ -40,6 +40,20 @@ createInertiaApp({
                 return 'https://wa.me/' + clean;
             }
         },
+        computed: {
+            dynamicWa() {
+                return this.$page?.props?.app?.admin_wa || this.wa;
+            },
+            dynamicEmail() {
+                return this.$page?.props?.app?.admin_email || this.email;
+            },
+            dynamicAlamat() {
+                return this.$page?.props?.app?.admin_address || this.alamat;
+            },
+            dynamicAppName() {
+                return this.$page?.props?.app?.name || this.appName;
+            }
+        },
         data() {
             return { 
               appName   : "e-TOEFL Ma'had Aly Tebuireng", 

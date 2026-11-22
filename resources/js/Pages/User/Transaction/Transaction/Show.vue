@@ -46,12 +46,16 @@
 										<div class="col company-details">
 											<h2 class="name">
 												<a target="_blank" href="javascript:;">
-												{{ appName }}
+												{{ dynamicAppName }}
 												</a>
 											</h2>
-											<div>{{ alamat }}</div>
-											<div>{{ wa }}</div>
-											<div>{{ email }}</div>
+											<div>{{ dynamicAlamat }}</div>
+											<div>
+												<a :href="formatWaLink(dynamicWa)" target="_blank" class="text-success text-decoration-none">
+													<i class="bx bxl-whatsapp me-1"></i>{{ dynamicWa }}
+												</a>
+											</div>
+											<div>{{ dynamicEmail }}</div>
 										</div>
 									</div>
 								</header>
@@ -143,7 +147,10 @@
 										<div>Perhatian!</div>
 										<div class="notice">
                                             Batas waktu pembayaran akan Habis pada 2 hari (2 x 24 jam) dari waktu transaksi, maka lakukan pembayaran & konfirmasi sebelum <span class="badge bg-danger">{{ transaction.maximum_payment_time }} </span><br><br>
-                                            Setelah melakukan pembayaran, silakan lakukan konfirmasi melalui Whatsapp di <b>{{ wa }}</b> dengan menyertakan nomor faktur serta bukti transfer pembayaran. terimakasih
+                                            Setelah melakukan pembayaran, silakan lakukan konfirmasi melalui Whatsapp di <b>{{ dynamicWa }}</b> dengan menyertakan nomor faktur serta bukti transfer pembayaran.<br>
+                                            <a :href="formatWaLink(dynamicWa)" target="_blank" class="btn btn-sm btn-success mt-2">
+                                                <i class="bx bxl-whatsapp me-1"></i> Konfirmasi Pembayaran via WhatsApp ({{ dynamicWa }})
+                                            </a>
                                         </div>
 									</div>
                                     <h5>

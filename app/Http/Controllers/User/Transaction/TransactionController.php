@@ -59,6 +59,15 @@ class TransactionController extends Controller
 
             if(!$exam) return abort('404', 'uppss....');
 
+            $price = max(0, (int) $exam->price);
+
+            // Jika paket gratis (Rp 0), langsung aktifkan tanpa invoice pending dan tanpa perlu persetujuan admin
+            if ($price === 0) {
+                $transaction = $this->transactionService->createTransacationWithExamId($id);
+                return redirect()->route('user.categories.exams.show', [$exam->category_id, $exam->id])
+                    ->with('success', 'Paket simulasi ujian gratis berhasil diaktifkan! Anda dapat langsung memulai pengerjaan soal.');
+            }
+
             if($this->transactionService->checkTransactionPendingByUser()) {
                 return redirect()->route('user.categories.exams.index', $exam->category_id)->with('error', 'Anda memiliki transaksi yang terpending, silakan selesaikan terlebih dahulu transaksi tersebut atau silakan hubungi admin');
             }

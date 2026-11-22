@@ -21,9 +21,15 @@ class BrevoEmailService
      */
     public static function sendEmail($toEmail, $toName, $subject, $htmlContent, $textContent = null)
     {
+        $isActive = filter_var(config('services.brevo.active', env('BREVO_ACTIVE', false)), FILTER_VALIDATE_BOOLEAN);
+        if (!$isActive) {
+            Log::info("[BREVO DEACTIVATED] BREVO_ACTIVE is false. Skipping email to {$toEmail} [Subject: {$subject}]");
+            return true;
+        }
+
         $apiKey = config('services.brevo.api_key') ?: env('BREVO_API_KEY');
-        $fromEmail = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'mahadaly@tebuireng.ac.id');
-        $fromName = config('mail.from.name') ?: env('MAIL_FROM_NAME', "e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng");
+        $fromEmail = config('services.brevo.sender_email') ?: (config('mail.from.address') ?: env('MAIL_FROM_ADDRESS', 'admin@etoefl.mahatbi.or.id'));
+        $fromName = config('services.brevo.sender_name') ?: (config('mail.from.name') ?: env('MAIL_FROM_NAME', "e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"));
 
         // 1. Prioritas Utama: Brevo Transactional Email REST API v3 (Direct HTTP via api-key)
         if (!empty($apiKey) && !in_array($apiKey, ['[Masukkan API Key Brevo Anda di .env]', 'YOUR_BREVO_API_KEY'])) {

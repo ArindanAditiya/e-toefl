@@ -164,22 +164,45 @@ class TransactionService implements TransactionInterface
     {
         $exam = $this->examRepo->find($id);
 
+        $price = max(0, (int) $exam->price);
+        $isFree = ($price === 0);
+
         $transaction = [
             'user_id' => Auth::user()->id,
             'exam_id' => $exam->id,
             'code' => Transaction::generateCode(),
             'date' => Carbon::now(),
-            'voucher_token' => $exam->price == 0 ? strtoupper(Str::random(15)) : null,
-            'total_purchases' => $exam->price,
+            'voucher_token' => strtoupper(Str::random(15)),
+            'total_purchases' => $price,
             'maximum_payment_time' => Carbon::now()->addDays(2),
-            'transaction_status' => $exam->price == 0 ? 'done' : 'pending'
+            'transaction_status' => $isFree ? 'done' : 'pending',
+            'voucher_used' => $isFree ? 1 : 0,
+            'voucher_activated' => $isFree ? 1 : 0,
         ];
 
         $transaction = $this->transactionRepo->create($transaction);
 
+        // Auto-approve and auto-unlock membership for free exam
+        if ($isFree && Auth::user()->student) {
+            $student = Auth::user()->student;
+            $memberData = [
+                'category_id' => $exam->category_id,
+                'exam_id' => $exam->id,
+            ];
+            $arrayMemberData = $student->member_access == null ? [] : (is_array($student->member_access) ? $student->member_access : json_decode($student->member_access, true));
+            if (!is_array($arrayMemberData)) {
+                $arrayMemberData = [];
+            }
+            $arrayMemberData[] = $memberData;
+            $student->update([
+                'member_access' => $arrayMemberData,
+                'is_member' => 1
+            ]);
+        }
+
         $user = User::find($transaction->user_id);
 
-        if($exam->price == 0) {
+        if($isFree) {
             sendBrevoNotification(
                 $user->email,
                 $user->name,

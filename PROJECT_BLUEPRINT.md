@@ -393,6 +393,50 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
 - Parameter `GOOGLE_REDIRECT_URI` dikonfigurasi dinamis menggunakan ekspresi `"${APP_URL}/auth/google/callback"`, sehingga secara otomatis menyesuaikan baik saat menggunakan `http://toefl.test` (Laragon lokal) maupun tunnel uji coba sementara (misal `https://trial-toefl.maul.my.id`).
 - Kunci `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` terisi default menggunakan Testing Key Cloudflare (`1x00000000000000000000AA` / `1x00000000000000000000000000000000BB`) yang selalu lolos verifikasi saat uji coba lokal.
 
+---
+
+## 12. SPRINT FINAL AUDIT: SAKELAR BREVO, AKSES OTOMATIS UJIAN GRATIS (RP 0), WHATSAPP INVOICE DINAMIS & SERTIFIKAT MA'HAD ALY (TAHAP 7)
+
+### 12.1 Akar Masalah Notifikasi Brevo & Sakelar Aman (`BREVO_ACTIVE=false`)
+- **Penyebab Teknis Email Tidak Masuk Inbox:**
+  Pada implementasi awal, pengiriman email via Brevo REST API v3 menggunakan alamat pengirim default `config('mail.from.address')` (`mahadaly@tebuireng.ac.id`). Sementara itu, domain pengirim resmi yang telah terdaftar dan terverifikasi secara valid di dashboard Brevo (dengan reputasi IP terverifikasi) adalah `admin@etoefl.mahatbi.or.id`. Ketidaksesuaian domain pengirim menyebabkan API Brevo menolak (*400 Bad Request / Sender not verified*). Karena pada lapisan service terdapat penanganan fallback log yang tetap mengembalikan nilai `true`, antarmuka pengguna memunculkan status sukses meskipun email tidak pernah terkirim ke kotak masuk peserta.
+- **Solusi yang Diterapkan:**
+  1. Menambahkan sakelar konfigurasi `BREVO_ACTIVE=env('BREVO_ACTIVE', false)` di `config/services.php` dan `.env` / `.env.example`.
+  2. Menetapkan alamat pengirim default terverifikasi `BREVO_SENDER_EMAIL="admin@etoefl.mahatbi.or.id"` dan nama pengirim `BREVO_SENDER_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"`.
+  3. Pada `App\Services\Notification\BrevoEmailService`, jika `BREVO_ACTIVE` bernilai `false`, sistem langsung mencatat log pengiriman secara lokal (`[BREVO DEACTIVATED]`) dan mengembalikan `true` secara instan tanpa melakukan HTTP call ke internet, sehingga aplikasi bebas dari risiko blocking, hanging, atau error saat jaringan offline/lokal.
+
+### 12.2 Solusi Bug Nominal Minus `-30` & Alur Pembelian Paket Ujian Gratis (`Rp 0`)
+- **Penyebab Teknis Bug `-30`:**
+  Pada database tabel `exams`, paket *Try Out TOEFL 1* tersimpan dengan nilai `price = -30`. Akibatnya, pada tampilan katalog soal (`Exam/Index.vue`), kondisi `exam.price === 0` bernilai false, sehingga paket tersebut memunculkan badge harga merah bertuliskan `Rp. -30` dan tombol "Beli Paket Try Out" (bukan "Kerjakan Soal"). Ketika dibeli, tagihan bernilai negatif dan menghasilkan invoice tertunda (*pending*) yang membingungkan peserta.
+- **Solusi yang Diterapkan:**
+  1. Memperbarui seluruh data ujian di tabel `exams` yang bernilai negatif menjadi `price = 0` via database query.
+  2. Menambahkan accessor `getPriceAttribute` pada model `Exam` dan validasi `min:0` pada `ExamRequest` untuk menjamin nilai harga tidak pernah kurang dari 0 (`max(0, (int) $value)`).
+  3. Menyempurnakan `TransactionService::createTransacationWithExamId`:
+     - Untuk paket gratis (`$price === 0`), total tagihan dikunci mutlak ke `Rp 0`.
+     - Status transaksi otomatis disetel ke `done` (lunas/selesai) dengan token voucher otomatis terbit dan berstatus terpakai/aktif (`voucher_used = 1, voucher_activated = 1`).
+     - Hak akses member (`is_member = 1` dan `member_access`) langsung disematkan pada akun siswa tanpa menunggu konfirmasi manual admin.
+  4. Menyempurnakan `TransactionController::buy`: jika paket yang dipilih gratis (`$price === 0`), peserta tidak perlu dicegah oleh transaksi pending lain dan langsung diarahkan ke halaman detail ujian untuk langsung memulai tes.
+  5. Memperbarui middleware `IsMember`: peserta yang mengerjakan paket gratis otomatis diberikan dispensasi akses ke simulasi ujian.
+
+### 12.3 Dinamisasi Nomor WhatsApp pada Invoice & Kontak Admin
+- **Penyebab Teknis:**
+  Nomor kontak WhatsApp pada komponen Vue (`Invoice.vue` dan `Show.vue`) sebelumnya menggunakan nilai statis pada mixin `app.js` (`@mahadalytbi`).
+- **Solusi yang Diterapkan:**
+  1. Menghubungkan mixin `resources/js/app.js` dengan data bersama Inertia `this.$page.props.app.admin_wa`, `admin_email`, dan `admin_address` yang bersumber langsung dari `.env` (`ADMIN_WA`).
+  2. Menambahkan fungsi helper formatting nomor telepon internasional (`formatWaLink`) agar nomor seperti `08...` otomatis diubah ke tautan aktif `https://wa.me/628...`.
+  3. Menambahkan tombol aksi konfirmasi langsung WhatsApp pada invoice agar mahasantri/peserta cukup mengklik satu tombol untuk terhubung dengan helpdesk resmi.
+
+### 12.4 Redesain Sertifikat Digital Resmi Ma'had Aly Hasyim Asy'ari
+- **Pembaruan Template PDF (`certificate_toefl.blade.php` & `certificate_toeic.blade.php`):**
+  - Mengganti referensi legacy (*"Imam Syafii"*, *"Executive Director of e-TOEFL"*, *"http://localhost:8000"*) dengan identitas akademik resmi Ma'had Aly.
+  - **Kop Institusi:** *Pusat Bahasa Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang*.
+  - **Penandatangan Resmi:** *Kepala Pusat Bahasa Ma'had Aly Hasyim Asy'ari Tebuireng*.
+  - **Verifikasi Online:** *https://etoefl.mahatbi.or.id/user/grades/{id}/certificate* lengkap dengan identitas sertifikat digital.
+  - **Estetika Visual:** Bingkai sertifikat modern berbasis CSS dengan perpaduan warna hijau islami (`#0A3D24`) dan aksen emas elegan (`#C5A059`), bebas dari ketergantungan latar belakang bitmap lawas berkulitas rendah.
+- **Pembaruan Sampel Gambar Landing Page:**
+  - Menghasilkan file pratinjau sertifikat resmi resolusi tinggi untuk `public/id/assets/images/sertifikat-toefl.jpg`, `sertifikat-toeic.jpg`, dan alias `portfolio-01.jpg` yang mencerminkan identitas Ma'had Aly Tebuireng.
+
+
 
 
 

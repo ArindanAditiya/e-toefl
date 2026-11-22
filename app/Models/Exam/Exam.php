@@ -36,6 +36,11 @@ class Exam extends Model
         'total_tolerance',
     ];
 
+    public function getPriceAttribute($value)
+    {
+        return max(0, (int) $value);
+    }
+
     public function category()
     {
         return $this->belongsTo(\App\Models\MasterData\Category::class)->withTrashed();

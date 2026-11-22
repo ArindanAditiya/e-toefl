@@ -48,7 +48,7 @@
                                     <h5><span class="badge badge-pill bg-primary ms-1">Enrolled</span></h5>
                                 </div>
                                 <div v-else>
-                                    <h5 v-if="exam.price === 0"><span class="badge badge-pill bg-success ms-1">Gratis</span></h5>
+                                    <h5 v-if="exam.price <= 0"><span class="badge badge-pill bg-success ms-1">Gratis</span></h5>
                                     <h5 v-else><span class="badge badge-pill bg-danger ms-1">Rp. {{ formatPrice(exam.price) }}</span></h5>
                                 </div>
 
@@ -56,7 +56,7 @@
                             <hr>
                             <div class="text-center">
 
-                                <div v-if="exam.transaction.length > 0 || exam.price === 0">
+                                <div v-if="exam.transaction.length > 0 || exam.price <= 0">
                                     <Link :href="`/user/categories/${exam.category_id}/exams/${exam.id}`" class="btn btn-outline-primary w-100">Kerjakan Soal</Link>
                                 </div>
                                 <div v-else>

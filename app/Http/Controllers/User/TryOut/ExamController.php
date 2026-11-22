@@ -86,10 +86,39 @@ class ExamController extends Controller
 
         $exam = $this->examService->find($id);
 
-        $transactions = Transaction::where(['user_id' => Auth::user()->id,'voucher_used' => 1, 'exam_id' => $exam->id])->get();
-
-        if(count($transactions) == 0 && $exam->price > 0) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses ke try out dengan judul <b>'.strtoupper(strtolower($exam->title)).'</b>, silakan lakukan pembelian terlebih dahulu.');
+        $price = max(0, (int) $exam->price);
+        if ($price === 0) {
+            // Pastikan transaksi done & voucher aktif untuk paket gratis
+            $existingTx = Transaction::where(['user_id' => Auth::user()->id, 'exam_id' => $exam->id])->first();
+            if (!$existingTx) {
+                Transaction::create([
+                    'user_id' => Auth::user()->id,
+                    'exam_id' => $exam->id,
+                    'code' => Transaction::generateCode(),
+                    'date' => Carbon::now(),
+                    'voucher_token' => strtoupper(\Illuminate\Support\Str::random(15)),
+                    'total_purchases' => 0,
+                    'maximum_payment_time' => Carbon::now()->addDays(2),
+                    'transaction_status' => 'done',
+                    'voucher_used' => 1,
+                    'voucher_activated' => 1,
+                ]);
+            } elseif ($existingTx->transaction_status !== 'done' || $existingTx->voucher_used != 1) {
+                $existingTx->update([
+                    'total_purchases' => 0,
+                    'transaction_status' => 'done',
+                    'voucher_used' => 1,
+                    'voucher_activated' => 1,
+                ]);
+            }
+            if (Auth::user()->student && Auth::user()->student->is_member == 0) {
+                Auth::user()->student->update(['is_member' => 1]);
+            }
+        } else {
+            $transactions = Transaction::where(['user_id' => Auth::user()->id,'voucher_used' => 1, 'exam_id' => $exam->id])->get();
+            if(count($transactions) == 0) {
+                return redirect()->back()->with('error', 'Anda tidak memiliki akses ke try out dengan judul <b>'.strtoupper(strtolower($exam->title)).'</b>, silakan lakukan pembelian terlebih dahulu.');
+            }
         } 
 
         $grade = Grade::where('exam_id', $id)->where('user_id', auth()->user()->id)->first();
