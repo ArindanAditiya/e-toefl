@@ -20,7 +20,7 @@ Route::get('local-storage', '\App\Http\Controllers\TestingController@localStorag
 Route::get('on-progress', '\App\Http\Controllers\TestingController@onprogress');
 
 Route::get('/', function () {
-    return redirect('/id/index.php');
+    return view("index");
 })->name('home');
 
 Route::post('upload', '\App\Http\Controllers\Admin\DashboardController@upload')->name('upload');
