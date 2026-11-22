@@ -201,3 +201,50 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
 - [x] **Fase 5: Validasi & Pengujian Inti Ujian:**
   - [x] Verifikasi tidak ada regresi pada login, pengerjaan soal, pemutaran audio listening, dan perhitungan nilai.
   - [x] Verifikasi hasil build Vite dan aset statis.
+
+---
+
+## 7. CHANGELOG / SPRINT PENYEMPURNAAN TAHAP 2 (UI/UX & EMAIL-ONLY REGISTRATION)
+
+### 7.1 Pemetaan Lokasi Aset Logo Baru & Favicon
+- **File Logo Asli Pengguna:** `storage/app/public/upload_files/img/logo.png` (resolusi 4128x1024 px, rasio horizontal ~4:1 dengan lambang resmi Ma'had Aly di sisi kiri dan tipografi resmi di sisi kanan).
+- **Distribusi File Logo Baru:**
+  - `public/storage/upload_files/img/logo.png` (sinkronisasi dari storage ke public storage)
+  - `public/assets/images/logo.png` (aset tema aplikasi Laravel/Inertia)
+  - `public/id/assets/images/logo.png` (aset landing page publik)
+- **Pembuatan & Penempatan Favicon Tab Browser:**
+  - Dihasilkan file favicon persegi (crop lambang stempel resmi Ma'had Aly resolusi tinggi):
+    - `public/favicon.ico`
+    - `public/favicon.png`
+    - `public/id/assets/images/favicon.png`
+    - `public/assets/images/favicon-32x32.png`
+  - Diinjeksi ke `<head>` pada `public/id/index.php`, `resources/views/app.blade.php`, dan semua template auth dengan cache buster `?v=2`.
+
+### 7.2 Pemetaan Komponen Navbar, Spacing Menu, & Sticky Header
+- **File Terdampak:**
+  - `public/id/assets/css/templatemo-space-dynamic.css`: Menghapus rule `height: 80px!important` dan `line-height: 100px` yang memotong logo saat window di-scroll, serta menata ulang class `.header-area`, `.background-header`, dan `.main-nav`.
+  - `public/id/index.php`: Penyesuaian container navbar, padding vertikal `14px 0`, jarak menu item `gap: 8px`, perataan vertikal fleksibel (`align-items: center`), serta proporsi logo `height: 52px; width: auto; max-width: 240px; object-fit: contain;`.
+
+### 7.3 Eliminasi Sisa Aksen Warna Merah/Pink Template Lama
+- **Akar Masalah:**
+  - Warna `#fe3f40` (merah coral Space Dynamic) masih terpasang dengan `!important` di 19 baris file `templatemo-space-dynamic.css`, menyebabkan link aktif menu (seperti "Beranda") dan tombol tetap bernuansa merah.
+  - Section *"Alur Pelaksanaan Ujian e-TOEFL"* (`.about-us`) memuat file background gelombang gradasi merah/pink (`about-bg.png`).
+  - Elemen dekorasi `.main-banner:after` dan `:before` memuat file `baner-dec-left.png` dan `baner-dec-right.png` berwarna merah/oranye.
+- **Tindakan Penyempurnaan:**
+  - Mengganti seluruh nilai `#fe3f40`, `#ff3b2c`, `#ff4d61`, dan `#f7eff1` pada `templatemo-space-dynamic.css` menjadi palet resmi Tebuireng:
+    - Hijau Utama: `#007A1E`
+    - Hijau Tua Pesantren: `#0A3D24`
+    - Aksen Emas: `#C69C2B`
+    - Hijau Lembut: `#EBF5EE`
+  - Menonaktifkan `background-image: url(../images/about-bg.png)` pada section `.about-us` dan menggantinya dengan latar belakang akademik bersih gradasi hijau lembut (`#F4FAF5` ke `#FFFFFF`).
+  - Menonaktifkan pseudo-elemen dekorasi banner merah `:before` dan `:after`.
+
+### 7.4 Penyederhanaan Alur Pendaftaran (Full Email-Only Registration)
+- **File Terdampak:**
+  - `database/migrations/2026_11_22_000000_make_phone_number_nullable_in_students_table.php`: Menjadikan kolom `phone_number` pada tabel `students` menjadi `NULLABLE`.
+  - `app/Actions/Fortify/CreateNewUser.php`: Menghapus kewajiban input nomor WhatsApp pada validasi backend (`'phone_number' => 'nullable'`).
+  - `resources/js/Pages/Auth/Register.vue`: Menghapus field input Nomor WhatsApp dari form registrasi peserta.
+  - `resources/js/Pages/Auth/ForgotPassword.vue`: Mengizinkan reset password menggunakan Email akun peserta (bukan lagi nomor WA).
+  - `app/Http/Requests/User/ForgotPasswordRequest.php` & `app/Http/Controllers/ActivationController.php`: Mendukung pencarian akun via Email untuk penerbitan password baru via Brevo.
+  - `public/id/index.php`: Memperbarui teks panduan Langkah 1 Ujian menjadi pendaftaran mandiri via email aktif.
+

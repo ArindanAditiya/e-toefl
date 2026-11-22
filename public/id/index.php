@@ -72,6 +72,11 @@ $homeUrl = '/';
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <base href="/id/">
     
+    <!-- Favicon Resmi Ma'had Aly Hasyim Asy'ari Tebuireng -->
+    <link rel="icon" type="image/png" href="assets/images/favicon.png?v=2">
+    <link rel="shortcut icon" href="favicon.ico?v=2">
+    <link rel="apple-touch-icon" href="assets/images/favicon.png?v=2">
+    
     <!-- SEO & Metadata Resmi Ma'had Aly Hasyim Asy'ari Tebuireng -->
     <title><?= htmlspecialchars($appName) ?> - Pondok Pesantren Tebuireng Jombang</title>
     <meta name="description" content="Platform resmi Ujian e-TOEFL & Prediksi Kemampuan Bahasa Inggris Mahasantri Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang. Uji kompetensi bahasa asing terstandar untuk memperluas dakwah global dan literasi turats.">
@@ -124,36 +129,98 @@ $homeUrl = '/';
         color: var(--mahad-dark);
       }
 
-      /* Navbar Styling */
+      /* Navbar Styling & Sticky Header Fixes (Anti-Truncation, Sempurna saat di-scroll) */
       header.header-area {
+        background-color: #FFFFFF !important;
+        box-shadow: 0 2px 14px rgba(10, 61, 36, 0.08) !important;
+        border-bottom: 3px solid var(--mahad-gold) !important;
+        height: auto !important;
+        min-height: 82px !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 9999 !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      }
+      header.header-area .main-nav {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 82px !important;
+        padding: 8px 0 !important;
+        background: transparent !important;
+        overflow: visible !important;
+      }
+      header.header-area .main-nav .logo {
+        display: flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
+        float: none !important;
+        margin-right: 25px !important;
+        text-decoration: none !important;
+      }
+      .header-logo-img {
+        height: 52px !important;
+        width: auto !important;
+        max-width: 270px !important;
+        object-fit: contain !important;
+        display: block !important;
+        transition: all 0.3s ease !important;
+      }
+      /* Sticky Header saat Halaman Di-scroll */
+      header.header-area.background-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        min-height: 72px !important;
+        height: auto !important;
         background-color: rgba(255, 255, 255, 0.98) !important;
-        box-shadow: 0 2px 12px rgba(10, 61, 36, 0.08) !important;
-        border-bottom: 3px solid var(--mahad-gold);
+        box-shadow: 0 4px 18px rgba(10, 61, 36, 0.12) !important;
+        border-bottom: 3px solid var(--mahad-gold) !important;
+        z-index: 99999 !important;
+        padding: 0 !important;
       }
-      .main-nav .logo-text-title {
-        font-size: 19px;
-        font-weight: 800;
-        color: var(--mahad-dark);
-        letter-spacing: -0.3px;
-        line-height: 1.2;
+      header.header-area.background-header .main-nav {
+        min-height: 72px !important;
+        padding: 5px 0 !important;
       }
-      .main-nav .logo-text-sub {
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--mahad-gold);
-        text-transform: uppercase;
-        letter-spacing: 1px;
+      header.header-area.background-header .header-logo-img {
+        height: 46px !important;
+        max-width: 240px !important;
       }
-      .main-nav .nav li a {
+      /* Spacing dan Tampilan Menu Navigasi */
+      header.header-area .main-nav .nav {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        float: none !important;
+        list-style: none !important;
+      }
+      header.header-area .main-nav .nav li {
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      header.header-area .main-nav .nav li a {
+        display: inline-block !important;
+        padding: 8px 14px !important;
+        height: auto !important;
+        line-height: normal !important;
         color: var(--mahad-dark) !important;
         font-weight: 600 !important;
-        transition: all 0.25s ease;
+        font-size: 14.5px !important;
+        border-radius: 6px !important;
+        transition: all 0.2s ease !important;
       }
-      .main-nav .nav li a:hover,
-      .main-nav .nav li a.active {
+      header.header-area .main-nav .nav li a:hover,
+      header.header-area .main-nav .nav li a.active {
         color: var(--mahad-primary) !important;
+        background-color: #EBF5EE !important;
       }
-      .main-nav .main-red-button a,
+      header.header-area .main-nav .nav li .main-red-button a,
       .main-button a,
       .main-button button,
       .btn-mahad-primary {
@@ -163,14 +230,26 @@ $homeUrl = '/';
         font-weight: 700 !important;
         border-radius: 6px !important;
         box-shadow: 0 4px 10px rgba(0, 122, 30, 0.25) !important;
+        padding: 9px 18px !important;
         transition: all 0.3s ease !important;
       }
-      .main-nav .main-red-button a:hover,
+      header.header-area .main-nav .nav li .main-red-button a:hover,
       .main-button a:hover,
       .main-button button:hover,
       .btn-mahad-primary:hover {
         background-color: var(--mahad-dark) !important;
         box-shadow: 0 4px 14px rgba(10, 61, 36, 0.35) !important;
+        color: #FFFFFF !important;
+      }
+      /* Mobile Menu Trigger alignment */
+      header.header-area .menu-trigger {
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+      }
+      /* Alur Ujian Background Gradient Tanpa Gelombang Merah */
+      .about-us {
+        background-image: none !important;
+        background: linear-gradient(180deg, #F4FAF5 0%, #FFFFFF 100%) !important;
       }
 
       /* Hero Section */
@@ -456,10 +535,7 @@ $homeUrl = '/';
           <nav class="main-nav d-flex align-items-center justify-content-between">
             <!-- ***** Logo Start ***** -->
             <a href="<?= htmlspecialchars($homeUrl) ?>" class="logo d-flex align-items-center text-decoration-none">
-              <div class="d-flex flex-column text-start">
-                <span class="logo-text-title"><i class="fa fa-graduation-cap text-success me-1"></i> e-TOEFL</span>
-                <span class="logo-text-sub">Ma'had Aly Tebuireng</span>
-              </div>
+              <img src="assets/images/logo.png?v=2" alt="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng" class="header-logo-img">
             </a>
             <!-- ***** Logo End ***** -->
             <!-- ***** Menu Start ***** -->
@@ -571,7 +647,7 @@ $homeUrl = '/';
                     <span class="badge rounded-pill bg-success px-3 py-2" style="background-color: var(--mahad-primary) !important; font-size: 14px;">Langkah 1</span>
                   </div>
                   <h4>Buat Akun Peserta</h4>
-                  <p class="mt-2 text-muted">Daftar menggunakan email aktif dan nomor WhatsApp untuk menerima tautan aktivasi akun.</p>
+                  <p class="mt-2 text-muted">Daftar secara instan menggunakan alamat email aktif untuk menerima tautan aktivasi akun.</p>
                 </div>
               </div>
               <div class="col-lg-3 col-md-6 mb-4">

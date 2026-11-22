@@ -15,7 +15,7 @@
                                     <div class="p-5">
                                         <h3 class="">Reset Password</h3>
                                         <p>Sudah memiliki akun ? <Link href="/login">Login disini</Link></p>
-                                        <p class="text-muted">Pastikan nomor handphone yang dimasukan adalah nomor handphone yang telah didaftarkan.</p>
+                                        <p class="text-muted">Masukkan alamat email aktif yang terdaftar pada akun Anda (atau nomor WhatsApp jika sebelumnya didaftarkan).</p>
                                         <div class="mb-3 mt-0">
                                             <div v-if="$page.props.session.error" class="alert alert-danger border-0">
                                                 <i class="fa fa-exclamation-triangle"></i>  <div v-html="$page.props.session.error"></div>
@@ -26,10 +26,10 @@
                                             </div>
                                         </div>
                                         <div class="mb-3 mt-0">
-                                            <label class="form-label">Nomor Hp (WA)</label>
-                                            <input type="text" v-model="form.phone_number" :class="{ 'is-invalid': errors.phone_number }" class="form-control" placeholder="Contoh: 081234567890">
-                                            <div v-if="errors.phone_number" class="invalid-feedback">
-                                                {{ errors.phone_number }}
+                                            <label class="form-label">Email Terdaftar (atau Nomor WhatsApp)</label>
+                                            <input type="text" v-model="form.email" :class="{ 'is-invalid': errors.email || errors.phone_number }" class="form-control" placeholder="Contoh: santri@mahatbi.or.id">
+                                            <div v-if="errors.email || errors.phone_number" class="invalid-feedback">
+                                                {{ errors.email || errors.phone_number }}
                                             </div>
                                         </div>
                                         <div class="d-grid gap-2">
@@ -39,7 +39,7 @@
                                         <div class="text-center">
                                             <br>
                                             <p class="text-muted">
-                                                Nomor tidak terdaftar? <a :href="`${formatWaLink(wa)}?text=${encodeURI('Hallo, Admin e-TOEFL Ma\'had Aly Tebuireng, saya ingin reset password akun, mohon bantuan untuk verifikasi data saya:\n\nNama:\nEmail:\nNomor WhatsApp:\n\nTerima kasih.')}`" target="_blank">Hubungi Admin di WhatsApp</a>
+                                                Kendala akses akun? <a :href="`${formatWaLink(wa)}?text=${encodeURI('Hallo, Admin e-TOEFL Ma\'had Aly Tebuireng, saya ingin bantuan pemulihan akses akun saya:\n\nNama:\nEmail:\n\nTerima kasih.')}`" target="_blank">Hubungi Admin di WhatsApp</a>
                                             </p>
                                         </div>
                                     </div>
@@ -87,7 +87,7 @@
 
         setup() {
             const form = reactive({
-                phone_number: '',
+                email: '',
             });
 
             // submit method
@@ -95,7 +95,8 @@
                 // send data to server
                 Inertia.post('/user/forgot-password', {
                     // data
-                    phone_number: form.phone_number,
+                    email: form.email,
+                    phone_number: form.email,
                 });
             }
 

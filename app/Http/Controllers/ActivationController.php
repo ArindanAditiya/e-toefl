@@ -43,15 +43,27 @@ class ActivationController extends Controller
 
     public function storeForgotPassword(ForgotPasswordRequest $request)
     {
-        $student = Student::where('phone_number', $request->phone_number)->first();   
-        if($student) {
-            $user = User::find($student->user_id);
+        $input = trim($request->input('email') ?: $request->input('phone_number'));
+        $user = null;
 
+        if (filter_var($input, FILTER_VALIDATE_EMAIL)) {
+            $user = User::where('email', $input)->first();
+        } else {
+            $student = Student::where('phone_number', $input)->first();
+            if ($student) {
+                $user = User::find($student->user_id);
+            }
+            if (!$user) {
+                $user = User::where('email', $input)->first();
+            }
+        }
+   
+        if($user) {
             if($user->is_active == 0) {
                 return redirect()->back()->with('error', 'Untuk melakukan reset password, akun anda harus aktif terlebih dahulu, silakan hubungi admin untuk mendapatkan link aktivasi.');
             }
             
-            $namePassword = explode(" ", $student->user->name);
+            $namePassword = explode(" ", $user->name);
             $newPassword = strtolower($namePassword[0]).mt_rand(10000, 99999);
 
             sendBrevoNotification(
@@ -76,10 +88,10 @@ class ActivationController extends Controller
                 'password' => bcrypt($newPassword)
             ]);
             
-            return redirect()->route('login')->with('success', 'Kami telah mengirimkan informasi perubahan password ke email <b>'.$user->email.'</b> (dan WhatsApp jika aktif), silakan periksa kotak masuk Anda.');
+            return redirect()->route('login')->with('success', 'Kami telah mengirimkan informasi perubahan password ke email <b>'.$user->email.'</b>, silakan periksa kotak masuk Anda.');
 
         } else {
-            return redirect()->back()->with('error', 'Nomor <b>'.$request->phone_number. '</b> tidak ditemukan, silakan klik link dibawah button kirim untuk menghubungi admin.');
+            return redirect()->back()->with('error', 'Akun dengan email / nomor kontak <b>'.htmlspecialchars($input). '</b> tidak ditemukan, silakan periksa kembali atau hubungi admin.');
         }
     }
 }

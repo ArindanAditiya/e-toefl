@@ -8,7 +8,7 @@
             <div class="row row-cols-1 row-cols-lg-2 row-cols-xl-2">
                 <div class="col mx-auto">
                     <div class="my-4 text-center">
-                        <img src="/assets/images/logo-img.png" width="180" alt="" />
+                        <img src="/storage/upload_files/img/logo.png?v=2" style="max-height: 80px; width: auto; max-width: 320px; object-fit: contain;" alt="Logo e-TOEFL Ma'had Aly Tebuireng" />
                     </div>
                     <div class="card">
                         <div class="card-body">
@@ -37,14 +37,6 @@
                                             </select>
                                             <div v-if="errors.gender" class="invalid-feedback">
                                                 {{ errors.gender }}
-                                            </div>
-                                        </div>
-
-                                        <div class="col-12">
-                                            <label class="form-label">Nomor WhatsApp Aktif</label>
-                                            <input type="text" v-model="form.phone_number" :class="{ 'is-invalid': errors.phone_number }" class="form-control" placeholder="Contoh: 081234567890">
-                                            <div v-if="errors.phone_number" class="invalid-feedback">
-                                                {{ errors.phone_number }}
                                             </div>
                                         </div>
 

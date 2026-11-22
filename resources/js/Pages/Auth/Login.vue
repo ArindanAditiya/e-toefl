@@ -12,7 +12,7 @@
                             <div class="card-body">
                                 <form @submit.prevent="submit" class="row g-3">
                                     <div class="p-5">
-                                        <center><img v-bind:src="'/storage/upload_files/img/' + logo" />
+                                        <center><img v-bind:src="'/storage/upload_files/img/' + logo + '?v=2'" style="max-height: 80px; width: auto; max-width: 320px; object-fit: contain;" alt="Logo e-TOEFL Ma'had Aly Tebuireng" />
                                         <h4 class="mt-5 font-weight-bold">Login</h4></center>
                                         <p class="text-muted">Silakan login dengan email dan password yang sudah anda daftarkan.</p>
                                         <div class="mb-3 mt-0">

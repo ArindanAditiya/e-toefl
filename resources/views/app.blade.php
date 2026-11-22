@@ -16,7 +16,8 @@
 	<title>e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng</title>
 
 	<!--favicon-->
-	<link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png" />
+	<link rel="icon" type="image/png" href="{{ asset('assets/images/favicon-32x32.png') }}?v=2" />
+	<link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=2" />
 	<!--plugins-->
     <link href="{{ asset('assets/plugins/vectormap/jquery-jvectormap-2.0.2.css') }}" rel="stylesheet"/>
 	<link href="{{ asset('assets/plugins/simplebar/css/simplebar.css') }}" rel="stylesheet" />

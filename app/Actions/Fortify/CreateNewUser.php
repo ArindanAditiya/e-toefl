@@ -34,7 +34,7 @@ class CreateNewUser implements CreatesNewUsers
             'district_id' => 'required',
             'village_id' => 'required',
             'address' => 'required',
-            'phone_number' => 'required|numeric|unique:students',
+            'phone_number' => 'nullable|string|max:30',
             'gender' => 'required',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed'
@@ -70,7 +70,7 @@ class CreateNewUser implements CreatesNewUsers
             'district_id' => $input['district_id'],
             'village_id' => $input['village_id'],
             'address' => $input['address'],
-            'phone_number' => $input['phone_number'],
+            'phone_number' => $input['phone_number'] ?? null,
             'gender' => $input['gender'],
             'is_member' => 0,
         ]);
@@ -78,6 +78,14 @@ class CreateNewUser implements CreatesNewUsers
         $appUrl = rtrim(config('app.url') ?: env('APP_URL', ''), '/');
         $appName = "e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng";
         $activationUrl = $appUrl . "/user/" . $user->id . "/activation";
+
+        $registeredDetails = [
+            'Nama Lengkap' => htmlspecialchars($user->name),
+            'Email Terdaftar' => htmlspecialchars($user->email),
+        ];
+        if (!empty($input['phone_number'])) {
+            $registeredDetails['Nomor WhatsApp'] = htmlspecialchars($input['phone_number']);
+        }
 
         sendBrevoNotification(
             $user->email,
@@ -87,11 +95,7 @@ class CreateNewUser implements CreatesNewUsers
                 "Selamat datang di platform resmi Ujian <strong>e-TOEFL Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang</strong>.",
                 "Akun Anda telah berhasil didaftarkan. Untuk mulai menggunakan akun dan mengikuti ujian prediksi TOEFL/TOEIC, silakan klik tombol aktivasi di bawah ini:"
             ],
-            [
-                'Nama Lengkap' => htmlspecialchars($user->name),
-                'Email Terdaftar' => htmlspecialchars($user->email),
-                'Nomor WhatsApp' => htmlspecialchars($user->student->phone_number),
-            ],
+            $registeredDetails,
             $activationUrl,
             "Aktifkan Akun Saya Sekarang",
             "Tautan aktivasi berlaku untuk memverifikasi keabsahan data peserta. Mohon jaga kerahasiaan akun Anda."
