@@ -505,6 +505,61 @@ MAIL_FROM_NAME="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng"
   2. Mengoptimalkan controller agar mengembalikan respons JSON ultra-ringan (`status: success`, under 100 bytes) dan menerapkan blok `try-catch` dengan pencarian ID soal bertipe aman.
   3. Menerapkan *Optimistic UI Update* di `Question.vue`: warna tombol jawaban langsung aktif saat diklik, dilengkapi *auto-retry* 2 kali di latar belakang jika ada gangguan jaringan sementara, dan mengganti popup `alert()` pemblokir dengan *toast notification* non-intrusif.
 
+---
+
+## 15. SPRINT FINAL RELEASE: FIX BACKEND TURNSTILE VERIFICATION, SECURITY AUDIT, & GITHUB DEPLOYMENT (TAHAP 10)
+
+### 15.1 Investigasi & Penyelesaian Bug Verifikasi Backend Cloudflare Turnstile
+- **Gejala Masalah:**
+  Pada formulir Login, Registrasi, dan Lupa Password, widget Cloudflare Turnstile berhasil menyelesaikan tantangan (centang hijau bertuliskan *"Berhasil!"*), namun saat formulir disubmit ke server, sistem menampilkan pesan error:
+  `"Verifikasi keamanan Cloudflare Turnstile gagal. Silakan coba lagi."`.
+- **Akar Masalah (Root Cause):**
+  1. *Laragon / Windows cURL SSL Certificate (Error 60):*
+     Secara default di lingkungan Windows/Laragon, PHP cURL tidak memiliki bundle sertifikat root CA Mozilla terbaru, sehingga pemanggilan HTTPS `Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', ...)` mengalami kegagalan handshake SSL cURL code 60 (`unable to get local issuer certificate`).
+  2. *Rejection Akibat Parameter `remoteip` di Balik Reverse Proxy / Tunnel:*
+     Ketika aplikasi diakses melalui Cloudflare Tunnel atau reverse proxy lokal, `request()->ip()` menghasilkan loopback/private IP (`127.0.0.1` atau `192.168.x.x`). Mengirimkan IP loopback/private ke Cloudflare `siteverify` menyebabkan Cloudflare menolak verifikasi dengan kode `invalid-remoteip` karena IP pemecah tantangan sebenarnya adalah IP publik pengguna. Dokumentasi resmi Cloudflare Turnstile menyatakan bahwa parameter `remoteip` bersifat opsional dan sebaiknya diabaikan jika aplikasi berjalan di balik proxy/tunnel yang tidak meneruskan IP publik tepercaya.
+  3. *Whitespace pada Kunci Secret:*
+     Adanya potensi spasi tersembunyi (*trailing spaces*) pada string kunci secret di `.env`.
+  4. *Lifecycle SPA Inertia.js:*
+     Inertia me-render halaman secara SPA dinamis tanpa full page reload. Skrip eksternal Turnstile `api.js` sering kali tidak otomatis me-render ulang elemen `#turnstile-container` yang baru dimasukkan ke DOM.
+- **Solusi yang Diterapkan:**
+  1. **Overhaul Helper `validateTurnstile()` di `app/Helpers/Helpers.php`:**
+     - Menambahkan opsi HTTP Client Laravel `->withoutVerifying()` dan `->timeout(10)` agar kebal terhadap kendala sertifikat lokal di server pengujian/Windows cURL.
+     - Menyaring parameter `remoteip`: memastikan IP lokal/loopback (`127.0.0.1`, `::1`, rentang RFC1918) tidak dikirimkan ke Cloudflare API.
+     - Membersihkan secret key dengan `trim(config('services.turnstile.secret_key', ...))`.
+     - Menambahkan penanganan whitelist untuk Turnstile Testing Keys resmi Cloudflare (`1x00000000000000000000000000000000BB`, dummy keys).
+     - Menambahkan logging komprehensif saat verifikasi ditolak agar error kode spesifik dari Cloudflare dapat dipantau di `storage/logs/laravel.log`.
+  2. **Inisialisasi Eksplisit di Komponen Vue (`Login.vue`, `Register.vue`, `ForgotPassword.vue`):**
+     - Memanfaatkan lifecycle hook `onMounted()` untuk mendeteksi `window.turnstile` dan memanggil `window.turnstile.render('#turnstile-container', { callback: ... })`.
+     - Menyimpan token hasil tantangan ke dalam *reactive state* Vue `turnstileToken` dan menyertakannya secara otomatis dalam payload `useForm()`.
+     - Menyediakan elemen `<input type="hidden" name="cf-turnstile-response" :value="turnstileToken">` sebagai fallback kompatibilitas form POST murni.
+
+### 15.2 Audit Menyeluruh 3 Tahapan Rilis
+1. **Tahap Pra-Development / Setup:**
+   - Kompatibilitas runtime: PHP 8.1 - 8.3 dengan ekstensi `curl`, `mbstring`, `openssl`, `pdo_mysql`, `gd`, `zip`.
+   - Symlink penyimpanan public: `php artisan storage:link` terpasang mengarah ke `storage/app/public`.
+   - Database migrations & seeders tersinkronisasi penuh dengan tabel user, role, permissions, kategori, soal, bank soal, dan paket ujian.
+2. **Tahap Development / Trial Server (`http://toefl.test` & `https://trial-toefl.maul.my.id`):**
+   - Autentikasi email dan Google OAuth teruji.
+   - Cloudflare Turnstile terintegrasi dan lolos verifikasi backend.
+   - Pembelian paket ujian gratis (Rp 0) terverifikasi langsung aktif tanpa perizinan manual admin.
+   - Mekanisme anti-cheat toleransi tab refresh tidak lagi memicu false-positive blokir.
+   - Layout PDF DomPDF e-Sertifikat teruji pas 1 halaman landscape A4 dengan tanda tangan Mudir *Abdul Karim Amrulloh* dan stempel resmi hijau Ma'had Aly.
+3. **Tahap Production / Publikasi Resmi (`https://etoefl.mahatbi.or.id`):**
+   - Konfigurasi `APP_ENV=production` dan `APP_DEBUG=false`.
+   - Pengaktifan notifikasi transaksional email Brevo API (`BREVO_ACTIVE=true`).
+   - Reverse proxy Cloudflare terkonfigurasi dengan `TrustProxies` dan SSL scheme auto-detection.
+
+### 15.3 Keamanan Lingkungan & Sanitasi Kredensial (.gitignore & .env.example)
+- Mengamankan `.gitignore` agar memblokir seluruh varian `.env` (`.env`, `.env.backup`, `.env.production`, `.env.*.local`), kunci sertifikat (`*.pem`, `*.key`), database dump (`*.sql`, `*.sqlite`), log, serta cache framework.
+- Memperbarui file `.env.example` dengan seluruh kunci konfigurasi terbaru yang dibutuhkan aplikasi (Google OAuth, Brevo, Turnstile, Fonnte, Midtrans) menggunakan nilai placeholder yang aman tanpa mengekspos kredensial rahasia apapun ke repository Git.
+
+### 15.4 Sinkronisasi Repository Git & Deployment GitHub
+- Repositori Git resmi: `https://github.com/ArindanAditiya/e-toefl.git` pada branch `main`.
+- Menyinkronkan seluruh codebase yang telah diaudit, teruji, dan bebas error dari direktori kerja `toefl` ke repositori `e-toefl`.
+- Menyusun dokumentasi rilis komprehensif pada `README.md`, `PANDUAN_SISTEM_DAN_BANK_SOAL.md`, dan `AUDIT_DAN_RIWAYAT_PERUBAHAN.md`.
+
+
 
 
 

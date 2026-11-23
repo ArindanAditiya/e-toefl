@@ -144,7 +144,8 @@
 
                                         <!-- Cloudflare Turnstile Widget -->
                                         <div class="col-12 text-center d-flex flex-column align-items-center my-2">
-                                            <div class="cf-turnstile" :data-sitekey="$page.props.turnstile?.site_key || '1x00000000000000000000AA'" data-theme="light"></div>
+                                            <div id="turnstile-container" class="cf-turnstile" :data-sitekey="$page.props.turnstile?.site_key || '0x4AAAAAAGOEQBX1qQLAmZSs'" data-theme="light"></div>
+                                            <input type="hidden" name="cf-turnstile-response" :value="turnstileToken">
                                             <div v-if="errors.turnstile" class="text-danger small mt-1">
                                                 {{ errors.turnstile }}
                                             </div>
@@ -174,8 +175,8 @@
     // import Head form Inertia
     import { Head } from '@inertiajs/inertia-vue3';
 
-    //import reactive
-    import { reactive } from 'vue';
+    //import reactive, ref, onMounted
+    import { reactive, ref, onMounted } from 'vue';
 
     // import link
     import { Link } from '@inertiajs/inertia-vue3';
@@ -257,10 +258,39 @@
                 }).catch(error => console.error(error));
             }
 
+            const turnstileToken = ref('');
+
+            onMounted(() => {
+                const renderTurnstile = () => {
+                    if (window.turnstile) {
+                        const el = document.getElementById('turnstile-container');
+                        if (el && el.childElementCount === 0) {
+                            try {
+                                window.turnstile.render('#turnstile-container', {
+                                    sitekey: props.session?.turnstile_site_key || '0x4AAAAAAGOEQBX1qQLAmZSs',
+                                    theme: 'light',
+                                    callback: (token) => {
+                                        turnstileToken.value = token;
+                                    },
+                                    'expired-callback': () => {
+                                        turnstileToken.value = '';
+                                    }
+                                });
+                            } catch (e) {
+                                console.warn('Turnstile render notice:', e);
+                            }
+                        }
+                    } else {
+                        setTimeout(renderTurnstile, 300);
+                    }
+                };
+                renderTurnstile();
+            });
+
             // submit method
             const submit = () => {
                 const turnstileInput = document.querySelector('[name="cf-turnstile-response"]');
-                const turnstileToken = turnstileInput ? turnstileInput.value : '';
+                const token = turnstileToken.value || (turnstileInput ? turnstileInput.value : '');
 
                 // send data to server
                 Inertia.post('/register', {
@@ -276,14 +306,15 @@
                     address: form.address,
                     phone_number: form.phone_number,
                     gender: form.gender,
-                    'cf-turnstile-response': turnstileToken,
-                    turnstile_token: turnstileToken,
+                    'cf-turnstile-response': token,
+                    turnstile_token: token,
                 });
             }
 
             // return form state and submit method
             return {
                 form,
+                turnstileToken,
                 submit,
                 cityData,
                 districtData,
