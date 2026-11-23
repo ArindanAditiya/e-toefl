@@ -32,8 +32,33 @@ class SendNewUserNotification extends Notification
      */
     public function via($notifiable)
     {
-        // return ['mail'];
-        return ['telegram'];
+        $smtpUser = config('mail.mailers.smtp.username');
+        $smtpPass = config('mail.mailers.smtp.password');
+        $driver = config('mail.default');
+
+        // Kirim via Brevo API jika API key tersedia
+        $apiKey = config('services.brevo.api_key') ?: env('BREVO_API_KEY');
+        if (!empty($apiKey) && !in_array($apiKey, ['[Masukkan API Key Brevo Anda di .env]', 'YOUR_BREVO_API_KEY'])) {
+            try {
+                \App\Services\Notification\BrevoEmailService::sendEmail(
+                    $notifiable->email,
+                    $notifiable->name,
+                    "[e-TOEFL Ma'had Aly Tebuireng] Pendaftaran Pengguna Baru: " . $this->user->name,
+                    "<h3>Pendaftaran Pengguna Baru</h3><p>Terdapat peserta baru yang mendaftar di platform e-TOEFL:</p><ul><li><b>Nama:</b> {$this->user->name}</li><li><b>Email:</b> {$this->user->email}</li><li><b>Waktu:</b> {$this->user->created_at}</li></ul><p><a href='" . url('/admin/users') . "'>Buka Menu Manajemen Pengguna</a></p>"
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("SendNewUserNotification Brevo error: " . $e->getMessage());
+            }
+            return [];
+        }
+
+        // Jika tidak via Brevo API, gunakan mail channel HANYA jika kredensial SMTP tersedia atau log
+        if ($driver === 'log' || ($driver === 'smtp' && !empty($smtpUser) && !empty($smtpPass))) {
+            return ['mail'];
+        }
+
+        \Illuminate\Support\Facades\Log::info("Admin Notification: New User Registered ({$this->user->name} - {$this->user->email})");
+        return [];
     }
 
     /**
@@ -45,9 +70,14 @@ class SendNewUserNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->subject("[e-TOEFL Ma'had Aly Tebuireng] Pendaftaran Pengguna Baru: " . $this->user->name)
+            ->greeting("Assalamu'alaikum Wr. Wb. Admin e-TOEFL,")
+            ->line("Terdapat pengguna/peserta baru yang telah mendaftar di platform e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng:")
+            ->line("Nama Peserta: " . $this->user->name)
+            ->line("Email: " . $this->user->email)
+            ->line("Waktu Pendaftaran: " . $this->user->created_at)
+            ->action('Buka Menu Manajemen Pengguna', url('/admin/users'))
+            ->line("Pesan otomatis dari Sistem e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng.");
     }
 
     public function toTelegram($notifiable)

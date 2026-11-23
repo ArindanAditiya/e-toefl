@@ -38,7 +38,7 @@ class ExamRequest extends FormRequest
             'next_question_automatically' => 'required',
             'show_prev_next_button' => 'required',
             'type_option' => 'required',
-            'price' => 'required',
+            'price' => 'required|numeric|min:0',
             'total_tolerance' => 'required',
             // 'duration_section.*' => 'required',
         ];

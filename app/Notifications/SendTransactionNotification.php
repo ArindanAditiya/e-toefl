@@ -32,8 +32,32 @@ class SendTransactionNotification extends Notification
      */
     public function via($notifiable)
     {
-        // return ['mail'];
-        return ['telegram'];
+        $smtpUser = config('mail.mailers.smtp.username');
+        $smtpPass = config('mail.mailers.smtp.password');
+        $driver = config('mail.default');
+
+        // Kirim via Brevo API jika API key tersedia
+        $apiKey = config('services.brevo.api_key') ?: env('BREVO_API_KEY');
+        if (!empty($apiKey) && !in_array($apiKey, ['[Masukkan API Key Brevo Anda di .env]', 'YOUR_BREVO_API_KEY'])) {
+            try {
+                \App\Services\Notification\BrevoEmailService::sendEmail(
+                    $notifiable->email,
+                    $notifiable->name,
+                    "[e-TOEFL Ma'had Aly Tebuireng] Transaksi Baru #" . $this->transaction->code,
+                    "<h3>Transaksi Paket Ujian Baru</h3><p>Terdapat transaksi baru:</p><ul><li><b>No Invoice:</b> {$this->transaction->code}</li><li><b>Nama:</b> {$this->transaction->user->name}</li><li><b>Paket:</b> {$this->transaction->exam->title}</li><li><b>Total:</b> Rp. " . number_format($this->transaction->total_purchases, 0, ',', '.') . "</li></ul><p><a href='" . url('/admin/transactions') . "'>Buka Menu Manajemen Transaksi</a></p>"
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("SendTransactionNotification Brevo error: " . $e->getMessage());
+            }
+            return [];
+        }
+
+        if ($driver === 'log' || ($driver === 'smtp' && !empty($smtpUser) && !empty($smtpPass))) {
+            return ['mail'];
+        }
+
+        \Illuminate\Support\Facades\Log::info("Admin Notification: New Transaction #{$this->transaction->code}");
+        return [];
     }
 
     /**
@@ -45,9 +69,17 @@ class SendTransactionNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject("[e-TOEFL Ma'had Aly Tebuireng] Transaksi Baru #" . $this->transaction->code)
+            ->greeting("Assalamu'alaikum Wr. Wb. Admin e-TOEFL,")
+            ->line("Terdapat transaksi/pesanan paket ujian baru:")
+            ->line("No. Invoice: " . $this->transaction->code)
+            ->line("Waktu Transaksi: " . $this->transaction->created_at)
+            ->line("Nama Peserta: " . $this->transaction->user->name)
+            ->line("Email Peserta: " . $this->transaction->user->email)
+            ->line("Paket Ujian: " . $this->transaction->exam->title)
+            ->line("Total Nominal: Rp. " . number_format($this->transaction->total_purchases, 0, ',', '.'))
+            ->action('Buka Menu Manajemen Transaksi', url('/admin/transactions'))
+            ->line("Pesan otomatis dari Sistem e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng.");
     }
 
     public function toTelegram($notifiable)

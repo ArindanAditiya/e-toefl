@@ -24,14 +24,14 @@ class ForgotPasswordRequest extends FormRequest
     public function rules()
     {
         return [
-            'phone_number' => 'required',
+            'email' => 'required|email|exists:users,email',
         ];
     }
 
     public function attributes()
     {
         return [
-            'phone_number' => __('user.phone_number'),
+            'email' => 'Alamat Email',
         ];
     }
 }

@@ -43,28 +43,48 @@ class ActivationController extends Controller
 
     public function storeForgotPassword(ForgotPasswordRequest $request)
     {
-        $student = Student::where('phone_number', $request->phone_number)->first();   
-        if($student) {
-            $user = User::find($student->user_id);
+        $turnstileToken = $request->input('cf-turnstile-response') ?? $request->input('turnstile_token');
+        if (!validateTurnstile($turnstileToken, $request->ip())) {
+            return redirect()->back()->with('error', 'Verifikasi keamanan Cloudflare Turnstile gagal. Silakan coba lagi.');
+        }
 
+        $email = trim($request->input('email'));
+        $user = User::where('email', $email)->first();
+   
+        if($user) {
             if($user->is_active == 0) {
-                return redirect()->back()->with('error', 'Untuk melakukan reset password, akun anda harus aktif terlebih dahulu, silakan hubungi admin untuk mendapatkan link aktivasi.');
+                return redirect()->back()->with('error', 'Untuk melakukan reset password, akun Anda harus aktif terlebih dahulu. Silakan hubungi admin untuk mendapatkan bantuan aktivasi.');
             }
             
-            $namePassword = explode(" ", $student->user->name);
+            $namePassword = explode(" ", $user->name);
             $newPassword = strtolower($namePassword[0]).mt_rand(10000, 99999);
 
-            $message = "*Mohon dibaca dan dipahami!*\n\n_Hallo, saya admin dari e-TOEFL, berikut permintaan perubahan password untuk akun anda._\n\nNama: ".$user->name."\nEmail: ".$user->email."\nPassword Baru: ".$newPassword."\n\n*Mohon diperhatikan untuk penulisan email dan password baik itu huruf besar atau kecilnya, karena itu sangat berpengaruh untuk login, ingat dan simpan supaya tidak lupa.*\n\n_terimakasih_";
-            sendWhatsappNotification($user->student->phone_number, $message);
+            sendBrevoNotification(
+                $user->email,
+                $user->name,
+                "Permintaan Perubahan Password - e-TOEFL Ma'had Aly Tebuireng",
+                [
+                    "Kami menerima permintaan pengaturan ulang (reset) kata sandi untuk akun e-TOEFL Anda.",
+                    "Kata sandi baru telah digenerate oleh sistem secara otomatis. Silakan gunakan kredensial berikut untuk masuk ke platform:"
+                ],
+                [
+                    'Nama' => htmlspecialchars($user->name),
+                    'Email Akun' => htmlspecialchars($user->email),
+                    'Kata Sandi Baru' => '<code style="background: #e2ede4; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #0A3D24;">' . htmlspecialchars($newPassword) . '</code>',
+                ],
+                url('/login'),
+                "Masuk ke Akun Saya",
+                "Mohon perhatikan penulisan huruf besar dan kecil saat login. Demi keamanan, simpan kata sandi ini dengan baik."
+            );
 
             $user->update([
                 'password' => bcrypt($newPassword)
             ]);
             
-            return redirect()->route('login')->with('success', 'Kami telah mengirimkan perubahan password ke nomor Whatsapp <b>'.$request->phone_number.'</b> silakan untuk di cek, terimakasih');
+            return redirect()->route('login')->with('success', 'Kami telah mengirimkan kata sandi baru ke email <b>'.$user->email.'</b>, silakan periksa kotak masuk (atau folder spam) Anda.');
 
         } else {
-            return redirect()->back()->with('error', 'Nomor <b>'.$request->phone_number. '</b> tidak ditemukan, silakan klik link dibawah button kirim untuk menghubungi admin.');
+            return redirect()->back()->with('error', 'Akun dengan alamat email <b>'.htmlspecialchars($email). '</b> tidak terdaftar dalam sistem.');
         }
     }
 }

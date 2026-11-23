@@ -23,6 +23,13 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input)
     {
+        $turnstileToken = $input['cf-turnstile-response'] ?? $input['turnstile_token'] ?? request()->input('cf-turnstile-response') ?? request()->input('turnstile_token');
+        if (!validateTurnstile($turnstileToken, request()->ip())) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'turnstile' => ['Verifikasi keamanan Cloudflare Turnstile gagal. Silakan coba lagi.']
+            ]);
+        }
+
         $niceNames = [
             'province_id' => 'Provinsi'
         ];
@@ -34,7 +41,7 @@ class CreateNewUser implements CreatesNewUsers
             'district_id' => 'required',
             'village_id' => 'required',
             'address' => 'required',
-            'phone_number' => 'required|numeric|unique:students',
+            'phone_number' => 'nullable|string|max:30',
             'gender' => 'required',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed'
@@ -70,18 +77,49 @@ class CreateNewUser implements CreatesNewUsers
             'district_id' => $input['district_id'],
             'village_id' => $input['village_id'],
             'address' => $input['address'],
-            'phone_number' => $input['phone_number'],
+            'phone_number' => $input['phone_number'] ?? null,
             'gender' => $input['gender'],
             'is_member' => 0,
         ]);
           
         $appUrl = rtrim(config('app.url') ?: env('APP_URL', ''), '/');
-        $appName = config('app.name', 'e-TOEFL');
-        $message = "*Mohon dibaca dan dipahami!*\n\n_Hallo, saya admin dari ".$appName.", akun anda telah terdaftar di platform kami, berikut link untuk aktivasi akun anda._\n\nNama: ".$user->name."\nEmail: ".$user->email."\n\nBerikut link verifikasi anda\n".$appUrl."/user/".$user->id."/activation \n\n*Jika link tidak bisa diklik, silakan copy dan paste dibrowser anda.*\n\n_terimakasih telah menjadi bagian dari kami, semoga ".$appName." dapat membantu proses belajar anda. aamiin._";
-        sendWhatsappNotification($user->student->phone_number, $message);
+        $appName = "e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng";
+        $activationUrl = $appUrl . "/user/" . $user->id . "/activation";
+
+        $registeredDetails = [
+            'Nama Lengkap' => htmlspecialchars($user->name),
+            'Email Terdaftar' => htmlspecialchars($user->email),
+        ];
+        if (!empty($input['phone_number'])) {
+            $registeredDetails['Nomor WhatsApp'] = htmlspecialchars($input['phone_number']);
+        }
+
+        try {
+            sendBrevoNotification(
+                $user->email,
+                $user->name,
+                "Aktivasi Akun e-TOEFL - Ma'had Aly Hasyim Asy'ari Tebuireng",
+                [
+                    "Selamat datang di platform resmi Ujian <strong>e-TOEFL Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang</strong>.",
+                    "Akun Anda telah berhasil didaftarkan. Untuk mulai menggunakan akun dan mengikuti ujian prediksi TOEFL/TOEIC, silakan klik tombol aktivasi di bawah ini:"
+                ],
+                $registeredDetails,
+                $activationUrl,
+                "Aktifkan Akun Saya Sekarang",
+                "Tautan aktivasi berlaku untuk memverifikasi keabsahan data peserta. Mohon jaga kerahasiaan akun Anda."
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Registration email dispatch error: " . $e->getMessage());
+        }
         
-        $admin = User::find('20b2a4122c614bb68e41b1a6f3f37780');
-        $admin->notify(new SendNewUserNotification($user));
+        try {
+            $admin = User::find('20b2a4122c614bb68e41b1a6f3f37780');
+            if ($admin) {
+                $admin->notify(new SendNewUserNotification($user));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Registration admin notification error: " . $e->getMessage());
+        }
 
         return $user;
     }

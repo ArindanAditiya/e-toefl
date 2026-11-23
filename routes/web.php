@@ -19,9 +19,20 @@ Route::get('json-testing', '\App\Http\Controllers\TestingController@jsonRelation
 Route::get('local-storage', '\App\Http\Controllers\TestingController@localStorage');
 Route::get('on-progress', '\App\Http\Controllers\TestingController@onprogress');
 
+<<<<<<< HEAD
 Route::get('/', function () {
     return view("index");
 })->name('home');
+=======
+Route::get('/', '\App\Http\Controllers\LandingController@index')->name('home');
+Route::permanentRedirect('/id', '/');
+Route::permanentRedirect('/id/index.php', '/');
+Route::permanentRedirect('/forgot-password', '/user/forgot-password');
+
+// Google OAuth 2.0
+Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+>>>>>>> 5e8d7b856fed78801df8458db254485b76e6b674
 
 Route::post('upload', '\App\Http\Controllers\Admin\DashboardController@upload')->name('upload');
 Route::post('upload/announcement', '\App\Http\Controllers\Admin\DashboardController@uploadAnnouncement')->name('upload');
@@ -30,6 +41,7 @@ Route::post('upload/announcement', '\App\Http\Controllers\Admin\DashboardControl
 Route::group(['middleware' => ['auth', 'admin', 'accountIsActive']], function() {
     Route::group(['prefix' => 'admin', 'namespace' => '\App\Http\Controllers\Admin', 'as' => 'admin.'], function() {
         // dashboard
+        Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
         Route::get('/dashboard', 'DashboardController@index')->name('admin.dashboard');
         // Route::post('upload', 'DashboardController@upload')->name('admin.upload');
 

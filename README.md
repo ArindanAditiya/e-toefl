@@ -1,211 +1,175 @@
-# Panduan Setup Project E-TOEFL di WSL (Ubuntu)
+# e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng
 
-Panduan ini disusun berdasarkan hasil analisis dependensi dan konfigurasi spesifik pada proyek ini (`composer.json`, `composer.lock`, `package.json`, database migrasi, dan seeders).
+[![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org)
+[![Inertia.js](https://img.shields.io/badge/Inertia.js-1.x-9553E9?style=for-the-badge&logo=inertia)](https://inertiajs.com)
+[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
+[![Cloudflare Turnstile](https://img.shields.io/badge/Cloudflare-Turnstile-F38020?style=for-the-badge&logo=cloudflare)](https://www.cloudflare.com)
+[![Brevo](https://img.shields.io/badge/Brevo-Email%20API-0B996F?style=for-the-badge)](https://www.brevo.com)
 
----
-
-## 1. Spesifikasi Stack & Versi Kebutuhan
-
-| Komponen / Tools | Versi yang Harus Digunakan | Alasan & Catatan Teknis |
-| :--- | :--- | :--- |
-| **Sistem Operasi** | **Ubuntu 22.04 LTS / 24.04 LTS** (WSL 2) | Standar distribusi Ubuntu pada WSL. |
-| **PHP** | **PHP 8.2** *(Kritis)* | **Wajib gunakan PHP 8.2.** Pada `composer.lock`, dependensi seperti `nette/schema` dan `nette/utils` membatasi versi PHP `< 8.3`. Jika menggunakan PHP 8.3/8.4 bawaan Ubuntu terbaru, `composer install` akan gagal. |
-| **PHP Extensions** | `cli`, `common`, `fpm`, `mysql`, `mbstring`, `xml`, `curl`, `zip`, `bcmath`, `gd`, `intl`, `soap` | Dibutuhkan oleh core Laravel 10, DOMPDF (`barryvdh/laravel-dompdf`), Larapex Charts, dan manipulasi data string/gambar. |
-| **Composer** | **v2.x** (v2.7+) | Package manager PHP modern. |
-| **Node.js** | **v20.x LTS** (atau v18.x) | Proyek menggunakan **Vite 3** dan **Vue 3** + **Inertia.js**. Node 20 LTS direkomendasikan untuk stabilitas build. Disarankan di-install via NVM. |
-| **NPM** | **v10.x** (bawaan Node 20) | Package manager frontend. |
-| **Database** | **MySQL 8.0** atau **MariaDB 10.11+** | Sesuai konfigurasi default pada `.env.example`. |
-| **Utilitas Tambahan** | `git`, `curl`, `unzip`, `dos2unix` | Membantu instalasi dependensi dan mengonversi line-ending Windows (CRLF) ke Linux (LF). |
+Sistem Ujian Standarisasi Bahasa Inggris Daring (e-TOEFL & e-TOEIC) resmi **Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang**. Aplikasi ini dirancang modern, aman, dan responsif untuk memfasilitasi pelaksanaan ujian TOEFL secara daring dengan fitur Listening Audio, Bank Soal Terstruktur, Anti-Cheat Cerdas, Kalkulasi Skor Otomatis Standar TOEFL PBT (310–677), serta Penerbitan e-Sertifikat Digital instan ber-QR Code validasi resmi.
 
 ---
 
-## 2. Langkah Instalasi Lengkap (Terminal Baru Ubuntu WSL)
+## 🏛️ Identitas Lembaga & Branding
 
-Buka terminal Ubuntu WSL Anda dan jalankan perintah berikut secara berurutan:
-
-### Langkah 1: Update Sistem & Install Tool Dasar
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl git unzip zip software-properties-common ca-certificates lsb-release dos2unix
-```
-
----
-
-### Langkah 2: Tambahkan PPA & Install PHP 8.2 Beserta Ekstensi
-Ubuntu versi baru sering kali menginstal PHP 8.3 secara default. Gunakan repository resmi Ondřej Surý agar bisa memilih PHP 8.2 secara spesifik:
-
-```bash
-# Tambahkan PPA Ondrej PHP
-sudo add-apt-repository ppa:ondrej/php -y
-sudo apt update
-
-# Install PHP 8.2 dan seluruh ekstensi yang diperlukan
-sudo apt install -y php8.2 php8.2-cli php8.2-common php8.2-fpm \
-php8.2-mysql php8.2-mbstring php8.2-xml php8.2-curl \
-php8.2-zip php8.2-bcmath php8.2-gd php8.2-intl php8.2-soap
-
-# Verifikasi versi PHP
-php -v
-```
+- **Lembaga:** Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng
+- **Website Utama:** [mahatbi.or.id](https://mahatbi.or.id)
+- **Domain Ujian (Produksi):** [etoefl.mahatbi.or.id](https://etoefl.mahatbi.or.id)
+- **Alamat:** Jl. Irian Jaya No. 10, Tebuireng, Cukir, Kec. Diwek, Kabupaten Jombang, Jawa Timur 61471
+- **Email Lembaga:** `mahadaly@tebuireng.ac.id` / `admin@etoefl.mahatbi.or.id`
+- **Tanda Tangan Sertifikat:** **Abdul Karim Amrulloh** (Mudir Ma'had Aly Hasyim Asy'ari)
 
 ---
 
-### Langkah 3: Install Composer (v2.x)
-```bash
-curl -sS https://getcomposer.org/installer | php
-sudo mv composer.phar /usr/local/bin/composer
+## 🌟 Fitur Utama Sistem
 
-# Verifikasi versi Composer
-composer --version
-```
+1. **Autentikasi Modern & Aman:**
+   - Registrasi berbasis email murni (*email-only registration*).
+   - Login 1-Klik dengan Akun Google (*Google OAuth 2.0 via Laravel Socialite*).
+   - Perlindungan anti-bot & spam cerdas menggunakan **Cloudflare Turnstile** (tanpa puzzle CAPTCHA rumit).
+   - Reset password berbasis link aman via email (Brevo API).
+
+2. **Mesin Ujian e-TOEFL & e-TOEIC:**
+   - 3 Sesi Ujian Standar: *Listening Comprehension*, *Structure & Written Expression*, dan *Reading Comprehension*.
+   - Pemutar Audio Listening dengan proteksi pembatasan putar & encoding nama file aman.
+   - *Optimistic UI Update* di halaman ujian (jawaban tersimpan instan tanpa lag/freeze).
+   - Pengecualian CSRF aman untuk endpoint pengerjaan ujian berdurasi panjang.
+
+3. **Mekanisme Anti-Cheat Cerdas:**
+   - Deteksi perpindahan tab / jendela browser (*Page Visibility API* & *Window Blur*).
+   - Sistem toleransi peringatan (maksimal 3x toleransi) dengan popup modal peringatan.
+   - Perlindungan *anti-false-positive*: toleransi tidak berkurang akibat refresh halaman atau gangguan jaringan sementara.
+   - Fitur pembukaan blokir peserta (*Unblock*) langsung dari panel Administrator.
+
+4. **Kalkulasi Skor & E-Sertifikat Otomatis:**
+   - Konversi tabel skor standar TOEFL PBT (skala 310 - 677).
+   - Template e-Sertifikat PDF presisi 1 halaman penuh (A4 Landscape, DomPDF).
+   - Dilengkapi identitas resmi Ma'had Aly Tebuireng: logo lingkaran hijau resmi, watermark transparan 6%, tanda tangan Mudir *Abdul Karim Amrulloh*, dan stempel kelembagaan.
+   - Verifikasi keaslian via QR Code dinamis (`/certificate/verify/{code}`).
+
+5. **Panel Admin & Manajemen Soal:**
+   - Dashboard analitik peserta, transaksi, dan riwayat ujian.
+   - Manajemen Bank Soal dengan editor WYSIWYG Summernote dan upload audio listening.
+   - Manajemen Paket Ujian (berbayar maupun paket gratis Rp 0 yang otomatis aktif tanpa konfirmasi manual).
 
 ---
 
-### Langkah 4: Install Node.js v20 LTS via NVM
-Menggunakan NVM menghindarkan masalah izin akses (*permission denied*) saat menginstal paket global/lokal npm:
+## 🚀 Panduan Setup & Instalasi (Local Development)
 
-```bash
-# Download & pasang NVM
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+### 1. Kebutuhan Sistem (Prerequisites)
+- PHP `>= 8.1` s/d `8.3`
+- Ekstensi PHP wajib: `curl`, `mbstring`, `openssl`, `pdo_mysql`, `gd`, `zip`, `fileinfo`
+- MySQL / MariaDB `>= 5.7`
+- Composer `>= 2.x`
+- Node.js `>= 18.x` & NPM `>= 9.x`
+- Laragon / XAMPP di Windows, atau Valet / Docker di macOS/Linux
 
-# Aktifkan NVM pada sesi terminal saat ini
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-# Install Node.js 20 LTS
-nvm install 20
-nvm use 20
-nvm alias default 20
-
-# Verifikasi Node & NPM
-node -v
-npm -v
-```
-
----
-
-### Langkah 5: Install & Setup Database MySQL
-Jika Anda ingin MySQL berjalan langsung di dalam lingkungan WSL:
+### 2. Langkah Instalasi Langkah-demi-Langkah
 
 ```bash
-# Install MySQL Server
-sudo apt install -y mysql-server
+# 1. Clone repository
+git clone https://github.com/ArindanAditiya/e-toefl.git
+cd e-toefl
 
-# Nyalakan service MySQL
-sudo service mysql start
+# 2. Install dependensi PHP
+composer install
 
-# Buka console MySQL
-sudo mysql
+# 3. Salin file environment & konfigurasi
+cp .env.example .env
+
+# 4. Generate Application Key
+php artisan key:generate
+
+# 5. Konfigurasi database di file .env
+# DB_DATABASE=toefl
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 6. Jalankan migrasi dan seeder database
+php artisan migrate --seed
+
+# 7. Buat symbolic link untuk folder storage (Audio & Gambar)
+php artisan storage:link
+
+# 8. Install dependensi frontend dan compile asset
+npm install
+npm run build
 ```
 
-Di dalam prompt MySQL, buat database dan user baru:
-```sql
-CREATE DATABASE etoefl;
-CREATE USER 'etoefl_user'@'localhost' IDENTIFIED BY 'password123';
-GRANT ALL PRIVILEGES ON etoefl.* TO 'etoefl_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
+---
+
+## 🔐 Konfigurasi Environment (`.env`)
+
+Berikut adalah parameter utama yang perlu disesuaikan pada file `.env`:
+
+| Parameter | Keterangan | Nilai Contoh (Local / Trial) |
+|---|---|---|
+| `APP_NAME` | Nama aplikasi | `"e-TOEFL Ma'had Aly Tebuireng"` |
+| `APP_ENV` | Environment kerja | `local` (pengujian) / `production` |
+| `APP_DEBUG` | Debug mode | `true` (local) / `false` (production) |
+| `APP_URL` | Domain akses | `http://toefl.test` atau `https://trial-toefl.maul.my.id` |
+| `BREVO_ACTIVE` | Sakelar Email Brevo | `false` (local) / `true` (live) |
+| `BREVO_API_KEY` | API Key Brevo v3 | `xkeysib-...` |
+| `TURNSTILE_SITE_KEY` | Site Key Cloudflare | Kunci dari Cloudflare Dashboard |
+| `TURNSTILE_SECRET_KEY` | Secret Key Cloudflare | Kunci rahasia Cloudflare |
+| `GOOGLE_CLIENT_ID` | OAuth Client ID Google | `*.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | OAuth Client Secret Google | Kunci rahasia dari Google Cloud Console |
+| `GOOGLE_REDIRECT_URI` | Callback Google OAuth | `${APP_URL}/auth/google/callback` |
+
+> [!TIP]
+> **Cloudflare Turnstile Testing Keys:**
+> Jika menguji di lingkungan localhost tanpa internet, gunakan kunci testing resmi Cloudflare:
+> - `TURNSTILE_SITE_KEY`: `1x00000000000000000000AA` (Always Passes)
+> - `TURNSTILE_SECRET_KEY`: `1x00000000000000000000000000000000BB` (Always Passes)
 
 ---
 
-### Langkah 6: Masuk ke Folder Project
-Path Windows `E:\Web KU\laravel-server\e-toefl` diakses melalui folder `/mnt/`:
+## 📋 Checklist 3 Tahapan Deployment
 
-```bash
-cd "/mnt/e/Web KU/laravel-server/e-toefl"
-```
+### Tahap 1: Pra-Development / Setup Awal
+- [x] PHP 8.1+ dan ekstensi terinstal.
+- [x] Database migration dan seeder role/permissions selesai.
+- [x] Folder storage terhubung (`php artisan storage:link`).
+- [x] Folder permission `storage/` dan `bootstrap/cache/` dapat ditulisi (writable).
 
-> **Tips Performa WSL 2:**  
-> Menjalankan proyek langsung di `/mnt/e/...` tetap berfungsi normal. Namun, jika ingin kecepatan I/O *build* dan *composer* yang jauh lebih cepat, Anda bisa memindahkan atau clone proyek ke direktori Linux WSL asli (seperti `~/projects/e-toefl`).
+### Tahap 2: Development & Trial Testing
+- [x] Domain local (`http://toefl.test`) dan Tunnel (`https://trial-toefl.maul.my.id`) aktif.
+- [x] Login email dan Google OAuth berjalan lancar.
+- [x] Cloudflare Turnstile tervalidasi sukses di sisi backend.
+- [x] Ujian simulasi & pemutar audio listening lancar tanpa error AJAX.
+- [x] Transaksi paket ujian gratis (Rp 0) langsung aktif seketika.
+- [x] E-Sertifikat PDF teruji pas 1 halaman landscape A4 dengan tanda tangan Mudir.
 
----
-
-### Langkah 7: Install Dependensi Proyek
-
-1. **Konversi Line-Ending script Artisan (CRLF -> LF):**
-   ```bash
-   dos2unix artisan
-   ```
-
-2. **Install Composer Dependencies:**
-   ```bash
-   composer install
-   ```
-
-3. **Install NPM Dependencies:**
-   ```bash
-   npm install
-   ```
-
----
-
-### Langkah 8: Konfigurasi Environment & Database
-
-1. **Salin file konfigurasi `.env` dan generate APP_KEY:**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-
-2. **Sesuaikan kredensial database di file `.env`:**  
-   Buka file `.env` dengan editor terminal (misal: `nano .env`) dan sesuaikan bagian database:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=etoefl
-   DB_USERNAME=etoefl_user
-   DB_PASSWORD=password123
-   ```
-
-3. **Buat Symlink Public Storage:**
-   ```bash
-   php artisan storage:link
-   ```
-
-4. **Jalankan Migrasi & Database Seeder:**  
-   > **Perhatian:** Proyek ini menyertakan database seeder geografis yang besar (`VillageSeeder.php` sekitar 4 MB). Naikkan alokasi memori sementara saat seeding agar tidak terjadi error *memory exhausted*:
-   ```bash
-   php -d memory_limit=1024M artisan migrate --seed
-   ```
-
----
-
-### Langkah 9: Menjalankan Server Development
-
-Buka dua terminal WSL terpisah di direktori project:
-
-* **Terminal 1 (Backend Laravel):**
+### Tahap 3: Publikasi ke Produksi (`https://etoefl.mahatbi.or.id`)
+- [ ] Ubah `APP_ENV=production` dan `APP_DEBUG=false` di server produksi.
+- [ ] Aktifkan `BREVO_ACTIVE=true` dengan domain sender resmi terverifikasi.
+- [ ] Pastikan DNS / Cloudflare Tunnel mengarah ke IP / instance server produksi.
+- [ ] Jalankan optimasi cache Laravel:
   ```bash
-  php artisan serve
-  ```
-  Akses di browser Windows: `http://127.0.0.1:8000`
-
-* **Terminal 2 (Frontend Vite Asset Server):**
-  ```bash
-  npm run dev
+  php artisan config:cache
+  php artisan route:cache
+  php artisan view:cache
   ```
 
 ---
 
-## 3. Catatan & Solusi Kendala Umum (Troubleshooting)
+## 🔑 Kredensial Administrator Default (Pengujian)
 
-1. **Service MySQL Mati Setelah Reboot WSL:**  
-   Service di WSL tidak otomatis berjalan seperti di Windows Services. Cukup jalankan kembali:
-   ```bash
-   sudo service mysql start
-   ```
+- **URL Login:** `http://toefl.test/login` (atau `/admin/dashboard`)
+- **Email:** `admin@mahatbi.or.id`
+- **Password:** `AdminTebuireng#2026`
 
-2. **Error `bad interpreter: /bin/sh^M` saat menjalankan `./artisan`:**  
-   Disebabkan oleh line-ending Windows CRLF. Jalankan:
-   ```bash
-   dos2unix artisan
-   ```
+---
 
-3. **PHP Memory Limit Error saat Seeding:**  
-   Jika migrasi atau seeder gagal dengan pesan `Allowed memory size exhausted`, selalu sertakan flag memori tambahan:
-   ```bash
-   php -d memory_limit=1024M artisan db:seed
-   ```
+## 📚 Dokumentasi Terkait
 
+Untuk pemahaman teknis lebih mendalam, silakan baca file dokumentasi berikut:
+1. [`PROJECT_BLUEPRINT.md`](file:///E:/laragon/www/toefl/PROJECT_BLUEPRINT.md) — Cetak biru arsitektur, rekam jejak sprint, dan perbaikan bug sistem.
+2. [`PANDUAN_SISTEM_DAN_BANK_SOAL.md`](file:///E:/laragon/www/toefl/PANDUAN_SISTEM_DAN_BANK_SOAL.md) — Panduan lengkap operasional admin, alur ujian, dan input bank soal.
+3. [`AUDIT_DAN_RIWAYAT_PERUBAHAN.md`](file:///E:/laragon/www/toefl/AUDIT_DAN_RIWAYAT_PERUBAHAN.md) — Laporan riwayat audit teknis dan daftar file yang dimodifikasi.
+
+---
+
+**Hak Cipta © 2026 Ma'had Aly Hasyim Asy'ari Tebuireng Jombang.**  
+*All Rights Reserved.*

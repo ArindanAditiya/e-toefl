@@ -3,7 +3,7 @@
 		<div class="sidebar-wrapper" data-simplebar="true">
 			<div class="sidebar-header">
 				<div>
-					<img src="/storage/upload_files/img/logo.png" class="" alt="logo icon" />
+					<img src="/storage/upload_files/img/logo.png?v=2" style="max-height: 44px; width: auto; max-width: 170px; object-fit: contain;" alt="logo icon" />
 				</div>
 				<div>
 					<!-- <h4 class="logo-text">{{ appName }}</h4> -->

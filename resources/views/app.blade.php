@@ -6,8 +6,18 @@
 	<!-- Required meta tags -->
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Platform Resmi Ujian e-TOEFL & Prediksi Kemampuan Bahasa Inggris Mahasantri Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang.">
+	<meta name="author" content="Ma'had Aly Hasyim Asy'ari Tebuireng">
+	<meta property="og:title" content="e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng">
+	<meta property="og:description" content="Platform Resmi Ujian e-TOEFL & Prediksi Kemampuan Bahasa Inggris Mahasantri Ma'had Aly Hasyim Asy'ari Pondok Pesantren Tebuireng Jombang.">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="{{ url('/') }}">
+	<meta name="theme-color" content="#0A3D24">
+	<title>e-TOEFL Ma'had Aly Hasyim Asy'ari Tebuireng</title>
+
 	<!--favicon-->
-	<link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png" />
+	<link rel="icon" type="image/png" href="{{ asset('assets/images/favicon-32x32.png') }}?v=2" />
+	<link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=2" />
 	<!--plugins-->
     <link href="{{ asset('assets/plugins/vectormap/jquery-jvectormap-2.0.2.css') }}" rel="stylesheet"/>
 	<link href="{{ asset('assets/plugins/simplebar/css/simplebar.css') }}" rel="stylesheet" />
@@ -19,6 +29,9 @@
 	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 	<link href="{{ asset('assets/css/app.css') }}" rel="stylesheet">
 	<link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet">
+
+	<!-- Cloudflare Turnstile API -->
+	<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
     <style>
         .tox-notifications-container {

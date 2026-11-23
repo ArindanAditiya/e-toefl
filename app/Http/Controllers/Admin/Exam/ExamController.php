@@ -163,8 +163,15 @@ class ExamController extends Controller
     public function unblocked($id)
     {
         $grade = $this->gradeService->find($id);
-        $grade->delete();
+        if ($grade) {
+            $exam = $grade->exam;
+            $defaultTolerance = $exam ? ($exam->total_tolerance ?: 3) : 3;
+            $grade->update([
+                'is_blocked' => 0,
+                'total_tolerance' => $defaultTolerance,
+            ]);
+        }
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Akses ujian peserta berhasil dibuka kembali.');
     }
 }

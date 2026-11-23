@@ -4,7 +4,8 @@
 /storage/*.key
 /vendor
 .env
-.env.backup
+.env.*
+!.env.example
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -13,3 +14,10 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+*.sqlite
+*.sql
+*.log
+*.pem
+*.key
+.DS_Store
+Thumbs.db
